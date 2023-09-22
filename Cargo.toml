@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "unnamed_engine",
+    "unnamed_client"
+]
