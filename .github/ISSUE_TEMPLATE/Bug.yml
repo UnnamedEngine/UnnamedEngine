@@ -1,0 +1,48 @@
+name: Bug Report
+description: File a bug report
+title: "[BUG]"
+labels:
+  - bug
+  - triage
+assignees:
+  - ZotyDev
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: The platforms where this bug happens
+      multiple: true
+      options:
+        - Windows
+        - Emscripten
+        - Linux
+        - MacOS
+  - type: dropdown
+    id: applications
+    attributes:
+      label: The applications where this bug happens
+      multiple: true
+      options:
+        - Engine
+        - Client
+        - Server
+        - Editor
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      placeholder: Tell us what you see!
+      value: "A bug happened"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and pase any relevant log outputs. This will be automatically formatted into code, so no need for backticks.
+      render: Shell
