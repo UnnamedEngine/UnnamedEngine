@@ -27,6 +27,6 @@ This Game Engine is the base of all ZotyDev games. The main objectives are custo
 - [ ] Graphics Renderer
 - [ ] Audio Renderer
 
-# Compiling
+# Building
 
 Hello rustacean, just run `cargo build` :D
