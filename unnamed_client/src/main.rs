@@ -1,5 +1,14 @@
-use unnamed_engine as ue;
+use unnamed_client::ClientData;
+use unnamed_engine::core::application::{EngineData, Application};
+
+mod unnamed_client;
 
 fn main() {
-    println!("Hello, world!");
+    let client_data = ClientData {
+        engine_data: EngineData {
+            running: true
+        }
+    };
+
+    client_data.run();
 }

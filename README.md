@@ -6,7 +6,9 @@
 [![🐧 Ubuntu](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Ubuntu.yml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Ubuntu.yml)
 [![🍎 MacOS](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/MacOS.yml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/MacOS.yml)
 
-This Game Engine is the base of all ZotyDev games. The main objectives are customzation and performance, allowing me to create complex stuff without restrictions. (Learning is the second main goal)
+Open-source game engine made to power high performant simulation games. The main objectives are customzation and performance, allowing you to create complex stuff without restrictions.
+
+(As a side note, this engine is being created to power two custom games, don't expect help or documentation yet)
 
 ## Supported Platforms
 - [x] Windows 10/11
