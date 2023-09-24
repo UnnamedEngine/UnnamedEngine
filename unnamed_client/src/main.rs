@@ -1,14 +1,6 @@
-use unnamed_client::ClientData;
-use unnamed_engine::core::application::{EngineData, Application};
-
-mod unnamed_client;
+use unnamed_engine::core::application::*;
 
 fn main() {
-    let client_data = ClientData {
-        engine_data: EngineData {
-            running: true
-        }
-    };
-
-    client_data.run();
+    let mut application = Application::new();
+    application.start();
 }
