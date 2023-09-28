@@ -9,3 +9,4 @@ unnamed_engine ={ path = "../unnamed_engine"}
 
 [build-dependencies]
 winres = "0.1"
+pollster = "0.3"
