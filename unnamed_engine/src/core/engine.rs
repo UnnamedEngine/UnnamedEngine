@@ -6,8 +6,6 @@ use winit::{
     window::WindowBuilder,
 };
 
-use tokio::task;
-
 pub struct Engine {
     running: bool,
     title: String,
