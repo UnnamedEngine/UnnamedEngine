@@ -12,3 +12,4 @@ log = "0.4"
 wgpu = "0.17"
 tokio = { version = "1.32.0", features = ["full"] }
 bytemuck = { version = "1.12", features = [ "derive" ] }
+image = { version = "0.24", default-features = false, features = ["png", "jpeg"] }
