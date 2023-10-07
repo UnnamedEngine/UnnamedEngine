@@ -14,3 +14,4 @@ tokio = { version = "1.32.0", features = ["full"] }
 bytemuck = { version = "1.12", features = [ "derive" ] }
 image = { version = "0.24", default-features = false, features = ["png", "jpeg"] }
 anyhow = "1.0"
+cgmath = "0.18"
