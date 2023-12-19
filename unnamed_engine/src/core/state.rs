@@ -1,6 +1,5 @@
-use cgmath::Point3;
 use wgpu::{util::DeviceExt, InstanceFlags};
-use winit::{window::{Window, WindowId}, event::{WindowEvent, KeyboardInput, ElementState, VirtualKeyCode}, event_loop::{EventLoop, self}};
+use winit::{window::Window, event::{WindowEvent, ElementState, KeyEvent}, keyboard::{Key, KeyCode, PhysicalKey::Code}, platform::modifier_supplement::KeyEventExtModifierSupplement};
 
 use crate::renderer::texture;
 
@@ -90,38 +89,30 @@ impl CameraController {
         }
     }
 
-    fn process_events(&mut self, event: &WindowEvent) -> bool {
-        match event {
-            WindowEvent::KeyboardInput {
-                input: KeyboardInput {
-                    state,
-                    virtual_keycode: Some(keycode),
-                    ..
-                },
-                ..
-            } => {
-                let is_pressed = *state == ElementState::Pressed;
-                match keycode {
-                    VirtualKeyCode::W | VirtualKeyCode::Up => {
-                        self.is_forward_pressed = is_pressed;
-                        true
-                    }
-                    VirtualKeyCode::A | VirtualKeyCode::Left => {
-                        self.is_left_pressed = is_pressed;
-                        true
-                    }
-                    VirtualKeyCode::S | VirtualKeyCode::Down => {
-                        self.is_backward_pressed = is_pressed;
-                        true
-                    }
-                    VirtualKeyCode::D | VirtualKeyCode::Right => {
-                        self.is_right_pressed = is_pressed;
-                        true
-                    }
-                    _ => false
+    fn process_events(&mut self, event: &KeyEvent) -> bool {
+        let is_pressed = event.state.is_pressed();
+        if let Code(keycode) = event.physical_key {
+            match keycode {
+                KeyCode::KeyW | KeyCode::ArrowUp => {
+                    self.is_forward_pressed = is_pressed;
+                    true
                 }
+                KeyCode::KeyA | KeyCode::ArrowLeft => {
+                    self.is_left_pressed = is_pressed;
+                    true
+                }
+                KeyCode::KeyS | KeyCode::ArrowDown => {
+                    self.is_backward_pressed = is_pressed;
+                    true
+                }
+                KeyCode::KeyD | KeyCode::ArrowRight => {
+                    self.is_right_pressed = is_pressed;
+                    true
+                }
+                _ => false
             }
-            _ => false
+        } else {
+            false
         }
     }
 
@@ -446,7 +437,7 @@ impl State {
         }
     }
 
-    pub fn input(&mut self, event: &WindowEvent) -> bool {
+    pub fn input(&mut self, event: &KeyEvent) -> bool {
         self.camera_controller.process_events(event)
     }
 
