@@ -1,5 +1,5 @@
 use cgmath::Point3;
-use wgpu::util::DeviceExt;
+use wgpu::{util::DeviceExt, InstanceFlags};
 use winit::{window::{Window, WindowId}, event::{WindowEvent, KeyboardInput, ElementState, VirtualKeyCode}, event_loop::{EventLoop, self}};
 
 use crate::renderer::texture;
@@ -199,7 +199,9 @@ impl State {
         // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
         let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
             backends: wgpu::Backends::all(),
-            dx12_shader_compiler: Default::default()
+            dx12_shader_compiler: Default::default(),
+            flags: InstanceFlags::default(),
+            gles_minor_version: wgpu::Gles3MinorVersion::Automatic,
         });
 
         let surface = unsafe { instance.create_surface(&window) }.unwrap();
@@ -478,10 +480,12 @@ impl State {
                             b: 0.3,
                             a: 1.0,
                         }),
-                        store: true,
+                        store: wgpu::StoreOp::Store,
                     },
                 })],
                 depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
             });
 
             render_pass.set_pipeline(&self.render_pipeline);
