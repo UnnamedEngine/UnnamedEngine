@@ -2,15 +2,14 @@ name: Bug Report
 description: File a bug report
 title: "[BUG]"
 labels:
-  - bug
-  - triage
+  - 🔍 Triage
 assignees:
   - ZotyDev
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report! Please take your time and describe this as accurate as you can, more details make it easier for us to fix the problem.
   - type: dropdown
     id: platforms
     attributes:
@@ -18,7 +17,6 @@ body:
       multiple: true
       options:
         - Windows
-        - Emscripten
         - Linux
         - MacOS
   - type: dropdown
@@ -28,8 +26,8 @@ body:
       multiple: true
       options:
         - Engine
-        - Client
         - Server
+        - Client
         - Editor
   - type: textarea
     id: what-happened
