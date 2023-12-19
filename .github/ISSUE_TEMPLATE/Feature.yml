@@ -1,0 +1,31 @@
+name: Feature Request
+description: Request a feature or enhancement
+title: "[FEATURE]"
+labels:
+  - 🔍 Triage
+assignees:
+  - ZotyDev
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request! Please take your time and describe this as accurate as you can, more details make it easier for us to understand what you want, making the development faster.
+  - type: dropdown
+    id: type
+    attributes:
+      label: Request Type
+      description: What is the type of the request?
+      multiple: false
+      options:
+        - Feature
+        - Enhancement
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Description
+      description: Describe the feature that you want
+      placeholder: A button to name the engine!
+    validations:
+      required: true
