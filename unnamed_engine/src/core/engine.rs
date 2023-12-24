@@ -1,5 +1,8 @@
+use std::env;
+
 use super::state::State;
 
+use env_logger::Env;
 use winit::{
     event::*,
     event_loop::EventLoop,
@@ -22,9 +25,13 @@ impl Engine {
     }
 
     // Starts the engine
-    // This method is the only that should be called from the application
+    // This method is the only one that should be called from the application
     pub fn start(&mut self, start_f: impl FnOnce(), update_f: impl FnMut(), render_f: impl FnMut()) {
-        env_logger::init();
+        // Initializes the logger
+        let env = Env::default()
+            .filter_or("MY_LOG_LEVEL", "info")
+            .write_style_or("MY_LOG_STYLE", "always");
+        env_logger::init_from_env(env);
 
         start_f();
 
@@ -40,9 +47,11 @@ impl Engine {
     // }
 
     // Starts running the engine
+    //
     async fn run(&self, mut update_f: impl FnMut(), mut render_f: impl FnMut()) {
         let event_loop = EventLoop::new().unwrap();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
+        window.set_title(&self.title);
 
         let mut state = State::new(window).await;
 
@@ -55,18 +64,24 @@ impl Engine {
                     window_id,
                 } if window_id == my_window_id => {
                     match &event {
+                        // Close event
                         WindowEvent::CloseRequested => elwt.exit(),
+                        // Resize event
                         WindowEvent::Resized(physical_size) => {
                             state.resize(*physical_size);
                         },
+                        // Scale changed event
                         WindowEvent::ScaleFactorChanged { .. } => {
                             state.resize(state.window().inner_size());
                         },
-                        WindowEvent::KeyboardInput { event, .. } =>{
+                        // Input event
+                        WindowEvent::KeyboardInput { event, .. } => {
+                            // Handle the inner inputs, if correctly handled, request a new frame
                             if state.input(event) {
                                 state.window().request_redraw();
                                 return;
                             }
+                            // TODO inser this into the applications
                             if event.state.is_pressed() {
                                 match event.physical_key {
                                     Code(KeyCode::Escape) => {
@@ -76,8 +91,19 @@ impl Engine {
                                 }
                             }
                         },
+                        // New frame requested
+                        // Just executes if the window id is the same as the one handled by the engine
+                        //
+                        // This is where the main loop runs on
                         WindowEvent::RedrawRequested if window_id == state.window().id() => {
+                            // Update the state
                             state.update();
+
+                            // Update the upper application
+                            update_f();
+
+                            // Render the state
+                            // Also handles errors
                             match state.render() {
                                 Ok(_) => {}
                                 // Reconfigure the surface if lost
@@ -88,23 +114,16 @@ impl Engine {
                                 Err(e) => eprintln!("{:?}", e),
                             }
 
+                            // Render the upper application
+                            render_f();
                         },
                         _ => {}
                     }
                 },
+                // Sometimes this will be called, and when it gets called it should just request a new frame
                 Event::AboutToWait => state.window().request_redraw(),
                 _ => {}
             }
         }).unwrap();
-    }
-
-    // Logical update that runs at each iteration of the engine
-    fn update(&self, mut update_f: impl FnMut()) {
-        update_f();
-    }
-
-    // Rendering that runs at each iteration of the engine
-    fn render(&self, mut render_f: impl FnMut()) {
-        render_f();
     }
 }
