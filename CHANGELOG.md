@@ -1,9 +1,11 @@
 ## 0.0.1-271223d
 
 - Defined a versioning standard at `VERSIONING.md`
+- Exposed `Engine` to `start()`, `update()` and `render()` when called from applications
 - Added a header with proper description for all the files
 - Added `stop()` to request graceful shutdown
-- Exposed `Engine` to `start()`, `update()` and `render()` when called from applications
+- Added a `Event` enum to handle the events sent by the engine
+- Moved the `ESC` to close feature to the applications
 
 ## 0.0.1-241223d
 

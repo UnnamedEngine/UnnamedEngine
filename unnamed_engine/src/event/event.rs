@@ -8,14 +8,13 @@
 //                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB
 //
 ////////////////////////////////////////////////////////////////////////////////
-// ? Main UnnamedEngine library
-pub mod core;
-pub mod renderer;
-pub mod event;
+// ? Defines the events that will be passed to the applications.
 
-////////////////////////////////////////////////////////////////////////////////
-// Tests
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub use winit::keyboard::KeyCode;
+
+pub enum Event {
+    Keyboard {
+        key: KeyCode,
+        is_pressed: bool,
+    }
 }
