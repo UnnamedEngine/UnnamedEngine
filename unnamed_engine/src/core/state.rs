@@ -1,3 +1,15 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗
+//                ██║   ██║████╗  ██║██╔════╝████╗  ██║
+//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║
+//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║
+//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║
+//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB
+//
+////////////////////////////////////////////////////////////////////////////////
+// ? Where the data that will be used during execution is defined and handled.
+
 use wgpu::{util::DeviceExt, InstanceFlags};
 use winit::{window::Window, event::{WindowEvent, ElementState, KeyEvent}, keyboard::{Key, KeyCode, PhysicalKey::Code}, platform::modifier_supplement::KeyEventExtModifierSupplement};
 

@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗
+//                ██║   ██║████╗  ██║██╔════╝████╗  ██║
+//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║
+//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║
+//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║
+//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB
+//
+////////////////////////////////////////////////////////////////////////////////
+// ? Handles everything related to textures.
 use image::GenericImageView;
 use anyhow::*;
 
@@ -8,6 +19,8 @@ pub struct Texture {
 }
 
 impl Texture {
+    ////////////////////////////////////////////////////////////////////////////
+    /// Load a texture from bytes
     pub fn from_bytes(
         device: &wgpu::Device,
         queue: &wgpu::Queue,
@@ -18,6 +31,8 @@ impl Texture {
         Self::from_image(device, queue, &img, Some(label))
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    /// Load a texture from a image
     pub fn from_image(
         device: &wgpu::Device,
         queue: &wgpu::Queue,

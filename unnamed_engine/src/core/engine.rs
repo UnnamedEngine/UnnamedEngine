@@ -1,5 +1,15 @@
-use std::env;
-
+////////////////////////////////////////////////////////////////////////////////
+//
+//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗
+//                ██║   ██║████╗  ██║██╔════╝████╗  ██║
+//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║
+//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║
+//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║
+//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB
+//
+////////////////////////////////////////////////////////////////////////////////
+// ? This file contains the main Engine struct, its where the abstract methods
+// ? are called and the general flow of execution is defined.
 use super::state::State;
 
 use env_logger::Env;
@@ -14,6 +24,7 @@ use winit::{
 pub struct Engine {
     running: bool,
     title: String,
+
 }
 
 impl Engine {
@@ -26,29 +37,32 @@ impl Engine {
 
     // Starts the engine
     // This method is the only one that should be called from the application
-    pub fn start(&mut self, start_f: impl FnOnce(), update_f: impl FnMut(), render_f: impl FnMut()) {
+    pub fn start(&mut self, start_f: impl FnOnce(&mut Engine), update_f: impl FnMut(&mut Engine), render_f: impl FnMut(&mut Engine)) {
         // Initializes the logger
         let env = Env::default()
             .filter_or("MY_LOG_LEVEL", "info")
             .write_style_or("MY_LOG_STYLE", "always");
         env_logger::init_from_env(env);
 
-        start_f();
+        start_f(self);
 
         self.running = true;
         let result = tokio::runtime::Runtime::new().unwrap().block_on(self.run(update_f, render_f));
     }
 
-    // // Stops the engine
-    // // Should be called for a graceful shutdown of the engine
-    // fn stop(&mut self, stop_f: impl FnOnce()) {
-    //     stop_f();
-    //     self.running = false;
-    // }
+    // Stops the engine
+    // Should be called for a graceful shutdown of the engine
+    pub fn stop(&mut self) {
+        // Running async so we must be sure it gets called only once
+        if self.running {
+            log::info!("Graceful shutdown complete, see you again :D");
+            self.running = false;
+        }
+    }
 
     // Starts running the engine
     //
-    async fn run(&self, mut update_f: impl FnMut(), mut render_f: impl FnMut()) {
+    async fn run(&mut self, mut update_f: impl FnMut(&mut Engine), mut render_f: impl FnMut(&mut Engine)) {
         let event_loop = EventLoop::new().unwrap();
         let window = WindowBuilder::new().build(&event_loop).unwrap();
         window.set_title(&self.title);
@@ -81,7 +95,7 @@ impl Engine {
                                 state.window().request_redraw();
                                 return;
                             }
-                            // TODO inser this into the applications
+                            // TODO insert this into the applications
                             if event.state.is_pressed() {
                                 match event.physical_key {
                                     Code(KeyCode::Escape) => {
@@ -96,11 +110,16 @@ impl Engine {
                         //
                         // This is where the main loop runs on
                         WindowEvent::RedrawRequested if window_id == state.window().id() => {
+                            // Should we stop?
+                            if !self.running {
+                                elwt.exit();
+                            }
+
                             // Update the state
                             state.update();
 
                             // Update the upper application
-                            update_f();
+                            update_f(self);
 
                             // Render the state
                             // Also handles errors
@@ -115,7 +134,7 @@ impl Engine {
                             }
 
                             // Render the upper application
-                            render_f();
+                            render_f(self);
                         },
                         _ => {}
                     }
