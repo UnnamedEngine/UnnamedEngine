@@ -43,7 +43,7 @@ impl Engine {
         start_f: impl FnOnce(&mut Engine),
         update_f: impl FnMut(&mut Engine),
         render_f: impl FnMut(&mut Engine),
-        event_f: impl FnMut(&mut Engine, Event)) {
+        event_f: impl FnMut(&mut Engine, &Event)) {
             // Initializes the logger
             let env = Env::default()
                 .filter_or("MY_LOG_LEVEL", "info")
@@ -71,7 +71,7 @@ impl Engine {
         &mut self,
         mut update_f: impl FnMut(&mut Engine),
         mut render_f: impl FnMut(&mut Engine),
-        mut event_f: impl FnMut(&mut Engine, Event)) {
+        mut event_f: impl FnMut(&mut Engine, &Event)) {
             let event_loop = EventLoop::new().unwrap();
             let window = WindowBuilder::new().build(&event_loop).unwrap();
             window.set_title(&self.title);
@@ -99,18 +99,22 @@ impl Engine {
                             },
                             // Input event
                             WinitWindowEvent::KeyboardInput { event, .. } => {
-                                // Handle the inner inputs, if correctly handled, request a new frame
-                                if state.input(event) {
-                                    state.window().request_redraw();
-                                    return;
-                                }
 
+                                // Send a keyboard event
                                 match event.physical_key {
                                     PhysicalKey::Code(key_code) => {
-                                        event_f(self, Event::Keyboard {
+                                        let keyboard_event = Event::Keyboard {
                                             key: key_code,
                                             is_pressed: event.state.is_pressed()
-                                        });
+                                        };
+                                        // First try to handle it internally, if correctly handled
+                                        // request a new frame
+                                        if state.input(&keyboard_event) {
+                                            state.window().request_redraw();
+                                            return;
+                                        }
+                                        // Then execute the application handler
+                                        event_f(self, &keyboard_event);
                                     },
                                     PhysicalKey::Unidentified(_) => {}
                                 }

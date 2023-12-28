@@ -1,3 +1,7 @@
+## 0.0.1-281223d
+
+- `Camera` got moved into a camera file
+
 ## 0.0.1-271223d
 
 - Defined a versioning standard at `VERSIONING.md`
