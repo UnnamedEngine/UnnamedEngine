@@ -20,7 +20,7 @@ use winit::{
     event::WindowEvent as WinitWindowEvent,
     event_loop::EventLoop,
     window::WindowBuilder,
-    keyboard::{PhysicalKey::{Code, self}, KeyCode}
+    keyboard::PhysicalKey,
 };
 
 pub struct Engine {
@@ -88,18 +88,32 @@ impl Engine {
                     } if window_id == my_window_id => {
                         match &event {
                             // Close event
-                            WinitWindowEvent::CloseRequested => elwt.exit(),
+                            WinitWindowEvent::CloseRequested => {
+                                // Create and dispatch shutdown event
+                                self.on_event(&Event::Shutdown, &mut event_f);
+                            },
                             // Resize event
                             WinitWindowEvent::Resized(physical_size) => {
+                                // Create and dispatch resize event
+                                // TODO make it work as a event
+                                self.on_event(&Event::Resize {
+                                    width: physical_size.width,
+                                    height: physical_size.height,
+                                }, &mut event_f);
                                 state.resize(*physical_size);
                             },
                             // Scale changed event
                             WinitWindowEvent::ScaleFactorChanged { .. } => {
+                                // Create and dispatch resize event
+                                // TODO make it work as a event
+                                self.on_event(&Event::Resize {
+                                    width: state.window().inner_size().width,
+                                    height: state.window().inner_size().height,
+                                }, &mut event_f);
                                 state.resize(state.window().inner_size());
                             },
                             // Input event
                             WinitWindowEvent::KeyboardInput { event, .. } => {
-
                                 // Send a keyboard event
                                 match event.physical_key {
                                     PhysicalKey::Code(key_code) => {
@@ -158,5 +172,29 @@ impl Engine {
                     _ => {}
                 }
             }).unwrap();
+    }
+
+    /// Gets called from the event loop and replicate the events to the
+    /// applications
+    fn on_event(&mut self, event: &Event, event_f: &mut impl FnMut(&mut Engine, &Event)) {
+        match event {
+            // Shutdown event, gets called when the engine should stop
+            Event::Shutdown => {
+                self.stop();
+                return
+            },
+            // Resize event, gets called when size or scale of the window change
+            Event::Resize {
+                width,
+                height
+            } => {
+
+            }
+            _ => {}
+        }
+
+        // Should be the last one since events are replicated from the engine
+        // to the application, thus the engine should try to handle events first
+        event_f(self, event);
     }
 }

@@ -1,3 +1,8 @@
+## 0.0.1-291223d
+
+- Added a internal event dispatcher for the engine
+- Added new events `Shutdown` and `Resize`
+
 ## 0.0.1-281223d
 
 - `Camera` got moved into a camera file
