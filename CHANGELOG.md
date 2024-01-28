@@ -1,3 +1,7 @@
+## 0.0.1-280124d
+
+- Improved the header of all source files
+
 ## 0.0.1-291223d
 
 - Added a internal event dispatcher for the engine
