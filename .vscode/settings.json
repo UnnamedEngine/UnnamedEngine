@@ -1,18 +1,18 @@
 {
-    "rust-analyzer.linkedProjects": [
-        ".\\unnamed_engine\\Cargo.toml",
-        ".\\unnamed_server\\Cargo.toml",
-        ".\\unnamed_client\\Cargo.toml",
-    ],
-    "editor.rulers": [
-        {
-            "column": 80,    // spacing of 1st column from left
-            "color": "#ff990044"   // orange, Go Vols!
-        },
-            100,  // 2nd ruler with no color option
-        {
-        "column": 120,      // third ruler
-        "color": "#9f0af544"  // purple, go Pirates!
-        },
-    ],
+  "rust-analyzer.linkedProjects": [
+    ".\\unnamed_engine\\Cargo.toml",
+    ".\\unnamed_server\\Cargo.toml",
+    ".\\unnamed_client\\Cargo.toml",
+  ],
+  "editor.rulers": [
+    {
+      "column": 80,    // spacing of 1st column from left
+      "color": "#ff990044"   // orange, Go Vols!
+    },
+    100,  // 2nd ruler with no color option
+    {
+      "column": 120,      // third ruler
+      "color": "#9f0af544"  // purple, go Pirates!
+    },
+  ],
 }

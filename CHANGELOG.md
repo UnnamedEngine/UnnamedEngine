@@ -1,3 +1,7 @@
+## 0.0.1-060224d
+
+- Changed identation from `4` `spaces` to `2` `spaces`
+
 ## 0.0.1-280124d
 
 - Improved the header of all source files

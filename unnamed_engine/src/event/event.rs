@@ -12,13 +12,13 @@
 pub use winit::keyboard::KeyCode;
 
 pub enum Event {
-    Shutdown,
-    Resize {
-        width: u32,
-        height: u32,
-    },
-    Keyboard {
-        key: KeyCode,
-        is_pressed: bool,
-    }
+  Shutdown,
+  Resize {
+    width: u32,
+    height: u32,
+  },
+  Keyboard {
+    key: KeyCode,
+    is_pressed: bool,
+  }
 }
