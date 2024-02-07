@@ -31,4 +31,14 @@ Open-source game engine made to power high performant simulation games. The main
 
 # Building
 
-Hello rustacean, just run `cargo build` :D
+Just run `cargo build --bin <binary_name>` with the desired binary :D
+
+## Client
+```
+cargo build --bin unnamed_client
+```
+
+## Server
+```
+cargo build --bin unnamed_server
+```

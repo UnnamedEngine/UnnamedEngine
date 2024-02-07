@@ -1,6 +1,12 @@
+## 0.0.1-070224d
+
+- Moved more parts of the camera from `core/state.rs` to `core/camera.rs`
+
 ## 0.0.1-060224d
 
 - Changed identation from `4` `spaces` to `2` `spaces`
+- Improved building information at `README.md`
+- Moved `CameraUniform` from `core/state.rs` to `renderer/camera.rs`
 
 ## 0.0.1-280124d
 

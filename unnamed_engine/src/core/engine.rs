@@ -32,10 +32,11 @@ impl Engine {
       running: false,
       title,
     }
-  }
+}
 
-  // Starts the engine
-  // This method is the only one that should be called from the application
+  /// Starts the engine
+  ///
+  /// This method is the only one that should be called from the application
   pub fn start(
     &mut self,
     start_f: impl FnOnce(&mut Engine),
@@ -54,8 +55,9 @@ impl Engine {
       tokio::runtime::Runtime::new().unwrap().block_on(self.run(update_f, render_f, event_f));
     }
 
-    // Stops the engine
-    // Should be called for a graceful shutdown of the engine
+    /// Stops the engine
+    ///
+    /// Should be called for a graceful shutdown of the engine
     pub fn stop(&mut self) {
       // Running async so we must be sure it gets called only once
       if self.running {
@@ -64,7 +66,7 @@ impl Engine {
       }
     }
 
-    // Starts running the engine
+    /// Starts the engine
     async fn run(
       &mut self,
       mut update_f: impl FnMut(&mut Engine),
@@ -93,7 +95,7 @@ impl Engine {
                 // Resize event
                 WinitWindowEvent::Resized(physical_size) => {
                   // Create and dispatch resize event
-                  // TODO make it work as a event
+                  // TODO make it work as an event
                   self.on_event(&Event::Resize {
                     width: physical_size.width,
                     height: physical_size.height,
@@ -103,7 +105,7 @@ impl Engine {
                 // Scale changed event
                 WinitWindowEvent::ScaleFactorChanged { .. } => {
                   // Create and dispatch resize event
-                  // TODO make it work as a event
+                  // TODO make it work as an event
                   self.on_event(&Event::Resize {
                     width: state.window().inner_size().width,
                     height: state.window().inner_size().height,
@@ -132,7 +134,7 @@ impl Engine {
                   }
                 },
                 // New frame requested
-                // Just executes if the window id is the same as the one handled by the engine
+                // Only executes if the window id is the same as the one handled by the engine
                 //
                 // This is where the main loop runs on
                 WinitWindowEvent::RedrawRequested if window_id == state.window().id() => {
@@ -152,8 +154,10 @@ impl Engine {
                   match state.render() {
                     Ok(_) => {}
                     // Reconfigure the surface if lost
+                    // TODO make it work as an event
                     Err(wgpu::SurfaceError::Lost) => state.resize(*state.size()),
                     // The system is out of memory, we should probably quit
+                    // TODO make it work as an event
                     Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
                     // All other errors (Outdated, Timeout) should be resolved by the next frame
                     Err(e) => eprintln!("{:?}", e),
@@ -172,8 +176,7 @@ impl Engine {
         }).unwrap();
       }
 
-      /// Gets called from the event loop and replicate the events to the
-      /// applications
+      /// Gets called from the event loop and replicate the events to the applications
       fn on_event(&mut self, event: &Event, event_f: &mut impl FnMut(&mut Engine, &Event)) {
         match event {
           // Shutdown event, gets called when the engine should stop
