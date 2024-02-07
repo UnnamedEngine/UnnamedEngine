@@ -1,6 +1,8 @@
 ## 0.0.1-070224d
 
 - Moved more parts of the camera from `core/state.rs` to `core/camera.rs`
+- Created `MiddlewareRenderer` to abstract rendering
+- Moved rendering from `core/state.rs` to `renderer/middleware_renderer.rs`
 
 ## 0.0.1-060224d
 
