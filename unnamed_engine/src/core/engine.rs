@@ -157,7 +157,7 @@ impl Engine {
                     Err(wgpu::SurfaceError::Lost) => state.resize(*state.size()),
                     // The system is out of memory, we should probably quit
                     // TODO make it work as an event
-                    //Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
+                    Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
                     // All other errors (Outdated, Timeout) should be resolved by the next frame
                     Err(e) => eprintln!("{:?}", e),
                   }
@@ -197,4 +197,4 @@ impl Engine {
         // to the application, thus the engine should try to handle events first
         event_f(self, event);
       }
-    }
+}
