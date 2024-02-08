@@ -11,7 +11,7 @@
 
 use wgpu::{util::DeviceExt, BindGroup, TextureFormat};
 
-use super::{camera::CameraController, texture::{self, Texture}};
+use super::{camera::CameraController, texture::{self, Texture}, viewport::{self, Viewport}};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -58,7 +58,7 @@ pub struct MiddlewareRenderer {
   diffuse_texture: Texture,
   diffuse_bind_group: BindGroup,
   shader: wgpu::ShaderModule,
-  render_pipeline: wgpu::RenderPipeline,
+  pipeline: wgpu::RenderPipeline,
   vertex_buffer: wgpu::Buffer,
   index_buffer: wgpu::Buffer,
   num_indices: u32,
@@ -113,8 +113,8 @@ impl MiddlewareRenderer {
       ]
     });
 
-    let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-      label: Some("render_pipeline_layout"),
+    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+      label: Some("pipeline_layout"),
       bind_group_layouts: &[
         &texture_bind_group_layout,
         &camera_controller.bind_group_layout,
@@ -127,9 +127,9 @@ impl MiddlewareRenderer {
       source: wgpu::ShaderSource::Wgsl(include_str!("../shader.wgsl").into()),
     });
 
-    let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-      label: Some("render_pipeline"),
-      layout: Some(&render_pipeline_layout),
+    let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+      label: Some("pipeline"),
+      layout: Some(&pipeline_layout),
       vertex: wgpu::VertexState {
         module: &shader,
         entry_point: "vs_main",
@@ -159,7 +159,7 @@ impl MiddlewareRenderer {
         mask: !0,
         alpha_to_coverage_enabled: false,
       },
-      multiview: None
+      multiview: None,
     });
 
     let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -180,7 +180,7 @@ impl MiddlewareRenderer {
       diffuse_texture,
       diffuse_bind_group,
       shader,
-      render_pipeline,
+      pipeline,
       vertex_buffer,
       index_buffer,
       num_indices,
@@ -189,12 +189,12 @@ impl MiddlewareRenderer {
 
   pub fn render(
     &mut self,
-    surface: &wgpu::Surface,
+    viewport: &mut Viewport,
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     camera_controller: &CameraController,
   ) -> Result<(), wgpu::SurfaceError> {
-    let output = surface.get_current_texture()?;
+    let output = viewport.get_current_texture();
 
     let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
@@ -227,7 +227,7 @@ impl MiddlewareRenderer {
         occlusion_query_set: None,
       });
 
-      render_pass.set_pipeline(&self.render_pipeline);
+      render_pass.set_pipeline(&self.pipeline);
       render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
       render_pass.set_bind_group(1, &camera_controller.bind_group, &[]);
       render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));

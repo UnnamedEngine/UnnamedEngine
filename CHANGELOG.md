@@ -1,7 +1,13 @@
 ## 0.0.1 - 08/02/2024
 
+- Updated `env_logger` crate to `0.11.1`
+- Updated `winit` crate to `0.29.10`
+- Updated `wgpu` crate to `0.19.1`
 - Removed unused `use`s
 - Changed the `CHANGELOG.md` format
+- Created `Viewport` to abstract windows creation and handling
+- Moved window logic from `core/state.rs` to `renderer/viewport.rs`
+- Converted `unwrap`s to `expect`
 
 ## 0.0.1 - 08/02/2024
 

@@ -7,6 +7,7 @@
 //                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB                   //
 ////////////////////////////////////////////////////////////////////////////////
 // ? Renderer module file.
+pub mod viewport;
 pub mod middleware_renderer;
 pub mod texture;
 pub mod camera;

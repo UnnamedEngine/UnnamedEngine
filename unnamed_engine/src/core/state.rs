@@ -8,26 +8,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 // ? Where the data that will be used during execution is defined and handled.
 
+use std::sync::Arc;
+
 use wgpu::InstanceFlags;
 use winit::window::Window;
 
-use crate::{event::event::Event, renderer::{camera::{CameraController, CameraDescriptor}, middleware_renderer::MiddlewareRenderer}};
+use crate::{event::event::Event, renderer::{camera::{CameraController, CameraDescriptor}, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}}};
 
 pub struct State {
-  surface: wgpu::Surface,
+  viewport: Viewport,
   device: wgpu::Device,
   queue: wgpu::Queue,
-  config: wgpu::SurfaceConfiguration,
-  size: winit::dpi::PhysicalSize<u32>,
-  window: Window,
   camera_controller: CameraController,
   middleware_renderer: MiddlewareRenderer,
 }
 
 impl State {
-  pub async fn new(window: Window) -> Self {
-    let size = window.inner_size();
-
+  pub async fn new(viewport: (Arc<Window>, wgpu::Color)) -> Self {
     // The instance is a handle to our GPU
     // Backends::all => Vulkan + Metal + DX12 + Browser WebGPU
     let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
@@ -37,50 +34,42 @@ impl State {
       gles_minor_version: wgpu::Gles3MinorVersion::Automatic,
     });
 
-    let surface = unsafe { instance.create_surface(&window) }.unwrap();
+    let viewport = ViewportDesc::new(viewport.0, viewport.1, &instance);
 
-    let adapter = instance.request_adapter(
+    let adapter = instance
+    .request_adapter(
       &wgpu::RequestAdapterOptions {
-        power_preference: wgpu::PowerPreference::default(),
-        compatible_surface: Some(&surface),
-        force_fallback_adapter: false,
-      },
-    ).await.unwrap();
+        // Request an adapter which can render to our surface
+        compatible_surface: Some(&viewport.surface),
+        ..Default::default()
+      })
+      .await
+      .expect("Failed to find an appropriate adapter");
 
-    let (device, queue) = adapter.request_device(
-      &wgpu::DeviceDescriptor {
-        features: wgpu::Features::empty(),
-        // WebGL doesn't support all the wgpu's features, so if
-        // we're building for the web we'll have to disable some
-        limits: if cfg!(target_arch = "wasm32") {
-          wgpu::Limits::downlevel_webgl2_defaults()
-        } else {
-          wgpu::Limits::default()
+    // Create the logical device and command queue
+    let (device, queue) = adapter
+      .request_device(
+        &wgpu::DeviceDescriptor {
+          label: None,
+          required_features: wgpu::Features::empty(),
+          // WebGL doesn't support all the wgpu's features, so if
+          // we're building for the web we'll have to disable some
+          required_limits: if cfg!(target_arch = "wasm32") {
+            wgpu::Limits::downlevel_webgl2_defaults()
+          } else {
+            wgpu::Limits::default()
+          },
         },
-        label: None,
-      },
       None,
-    ).await.unwrap();
+      )
+      .await
+      .expect("Failed to create device");
 
-    let surface_caps = surface.get_capabilities(&adapter);
-    let surface_format = surface_caps.formats.iter()
-      .copied()
-      .find(|f| { f.is_srgb() })
-      .unwrap_or(surface_caps.formats[0]);
-    let config = wgpu::SurfaceConfiguration {
-      usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-      format: surface_format,
-      width: size.width,
-      height: size.height,
-      present_mode: surface_caps.present_modes[0],
-      alpha_mode: surface_caps.alpha_modes[0],
-      view_formats: vec![],
-    };
-    surface.configure(&device, &config);
+    let viewport = viewport.build(&adapter, &device);
 
     let camera_controller = CameraController::new(&device, &CameraDescriptor {
       speed: 0.2,
-      aspect: config.width as f32 / config.height as f32,
+      aspect: viewport.config.width as f32 / viewport.config.height as f32,
       fovy: 45.0,
       near: 0.1,
       far: 100.0
@@ -90,35 +79,25 @@ impl State {
       &device,
       &queue,
       &camera_controller,
-      surface_format,
+      viewport.format,
     );
 
     Self {
-      window,
-      surface,
+      viewport,
       device,
       queue,
-      config,
-      size,
       camera_controller,
       middleware_renderer,
     }
   }
 
-  pub fn window(&self) -> &Window {
-    &self.window
-  }
-
-  pub fn size(&self) -> &winit::dpi::PhysicalSize<u32> {
-    &self.size
+  pub fn viewport(&self) -> &Viewport {
+    &self.viewport
   }
 
   pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
     if new_size.width > 0 && new_size.height > 0 {
-      self.size = new_size;
-      self.config.width = new_size.width;
-      self.config.height = new_size.height;
-      self.surface.configure(&self.device, &self.config);
+      self.viewport.resize(&self.device, new_size)
     }
   }
 
@@ -133,7 +112,7 @@ impl State {
 
   pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
     self.middleware_renderer.render(
-      &self.surface,
+      &mut self.viewport,
       &self.device,
       &self.queue,
       &self.camera_controller,

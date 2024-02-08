@@ -72,13 +72,15 @@ impl Engine {
       mut update_f: impl FnMut(&mut Engine),
       mut render_f: impl FnMut(&mut Engine),
       mut event_f: impl FnMut(&mut Engine, &Event)) {
-        let event_loop = EventLoop::new().unwrap();
-        let window = WindowBuilder::new().build(&event_loop).unwrap();
+        let event_loop = EventLoop::new()
+          .expect("Could not create event loop");
+        let window = WindowBuilder::new().build(&event_loop)
+          .expect("Could not create window");
         window.set_title(&self.title);
 
-        let mut state = State::new(window).await;
+        let mut state = State::new((window.into(), wgpu::Color::BLACK)).await;
 
-        let my_window_id = state.window().id();
+        let my_window_id = state.viewport().desc.window.id();
 
         event_loop.run(move |event, elwt| {
           match event {
@@ -107,10 +109,10 @@ impl Engine {
                   // Create and dispatch resize event
                   // TODO make it work as an event
                   self.on_event(&Event::Resize {
-                    width: state.window().inner_size().width,
-                    height: state.window().inner_size().height,
+                    width: state.viewport().desc.window.inner_size().width,
+                    height: state.viewport().desc.window.inner_size().height,
                   }, &mut event_f);
-                  state.resize(state.window().inner_size());
+                  state.resize(state.viewport().desc.window.inner_size());
                 },
                 // Input event
                 WinitWindowEvent::KeyboardInput { event, .. } => {
@@ -124,7 +126,7 @@ impl Engine {
                       // First try to handle it internally, if correctly handled
                       // request a new frame
                       if state.input(&keyboard_event) {
-                        state.window().request_redraw();
+                        state.viewport().desc.window.request_redraw();
                         return;
                       }
                       // Then execute the application handler
@@ -137,7 +139,7 @@ impl Engine {
                 // Only executes if the window id is the same as the one handled by the engine
                 //
                 // This is where the main loop runs on
-                WinitWindowEvent::RedrawRequested if window_id == state.window().id() => {
+                WinitWindowEvent::RedrawRequested if window_id == state.viewport().desc.window.id() => {
                   // Should we stop?
                   if !self.running {
                     elwt.exit();
@@ -150,17 +152,7 @@ impl Engine {
                   update_f(self);
 
                   // Render the state
-                  match state.render() {
-                    Ok(_) => {}
-                    // Reconfigure the surface if lost
-                    // TODO make it work as an event
-                    Err(wgpu::SurfaceError::Lost) => state.resize(*state.size()),
-                    // The system is out of memory, we should probably quit
-                    // TODO make it work as an event
-                    Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
-                    // All other errors (Outdated, Timeout) should be resolved by the next frame
-                    Err(e) => eprintln!("{:?}", e),
-                  }
+                  state.render().expect("Failed to render");
 
                   // Render the upper application
                   render_f(self);
@@ -169,10 +161,10 @@ impl Engine {
               }
             },
             // Sometimes this will be called, and when it gets called it should just request a new frame
-            WinitEvent::AboutToWait => state.window().request_redraw(),
+            WinitEvent::AboutToWait => state.viewport().desc.window.request_redraw(),
             _ => {}
           }
-        }).unwrap();
+        }).expect("Failed to run a loop");
       }
 
       /// Gets called from the event loop and replicate the events to the applications
