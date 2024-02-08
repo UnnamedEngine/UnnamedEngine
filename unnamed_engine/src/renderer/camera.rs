@@ -9,7 +9,7 @@ use wgpu::{util::DeviceExt, BindGroup, BindGroupLayout, Buffer, Device};
 ////////////////////////////////////////////////////////////////////////////////
 // ? Defines the camera.
 use winit::keyboard::KeyCode;
-use crate::{core::state::State, event::event::Event};
+use crate::event::event::Event;
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
@@ -146,7 +146,7 @@ impl CameraController {
   /// otherwise returns false
   pub fn process_events(&mut self, event: &Event) -> bool {
     match event {
-      Event::Keyboard {
+      Event::KeyboardInput {
         key,
         is_pressed } => {
           match key {
@@ -168,9 +168,9 @@ impl CameraController {
             },
             _ => false
           }
-        },
-        _ => false
-      }
+      },
+      _ => false
+    }
   }
 
   pub fn update(&mut self) {

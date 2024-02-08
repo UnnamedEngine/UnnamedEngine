@@ -14,11 +14,7 @@ use crate::event::event::Event;
 
 use env_logger::Env;
 use winit::{
-  event::Event as WinitEvent,
-  event::WindowEvent as WinitWindowEvent,
-  event_loop::EventLoop,
-  window::WindowBuilder,
-  keyboard::PhysicalKey,
+  dpi::PhysicalSize, event::{Event as WinitEvent, WindowEvent as WinitWindowEvent}, event_loop::EventLoop, keyboard::PhysicalKey, window::WindowBuilder
 };
 
 pub struct Engine {
@@ -78,9 +74,9 @@ impl Engine {
           .expect("Could not create window");
         window.set_title(&self.title);
 
-        let mut state = State::new((window.into(), wgpu::Color::BLACK)).await;
+        let mut engine_state = State::new((window.into(), wgpu::Color::BLACK)).await;
 
-        let my_window_id = state.viewport().desc.window.id();
+        let my_window_id = engine_state.viewport().desc.window.id();
 
         event_loop.run(move |event, elwt| {
           match event {
@@ -92,67 +88,98 @@ impl Engine {
                 // Close event
                 WinitWindowEvent::CloseRequested => {
                   // Create and dispatch shutdown event
-                  self.on_event(&Event::Shutdown, &mut event_f);
+                  self.on_event(&mut engine_state, &Event::Shutdown, &mut event_f);
                 },
                 // Resize event
                 WinitWindowEvent::Resized(physical_size) => {
                   // Create and dispatch resize event
                   // TODO make it work as an event
-                  self.on_event(&Event::Resize {
-                    width: physical_size.width,
-                    height: physical_size.height,
-                  }, &mut event_f);
-                  state.resize(*physical_size);
+                  self.on_event(
+                    &mut engine_state,
+                    &Event::Resize {
+                      width: physical_size.width,
+                      height: physical_size.height,
+                    },
+                    &mut event_f,
+                  );
                 },
                 // Scale changed event
                 WinitWindowEvent::ScaleFactorChanged { .. } => {
                   // Create and dispatch resize event
-                  // TODO make it work as an event
-                  self.on_event(&Event::Resize {
-                    width: state.viewport().desc.window.inner_size().width,
-                    height: state.viewport().desc.window.inner_size().height,
-                  }, &mut event_f);
-                  state.resize(state.viewport().desc.window.inner_size());
+                  let size = engine_state.viewport().desc.window.inner_size();
+                  self.on_event(
+                    &mut engine_state,
+                    &Event::Resize {
+                      width: size.width,
+                      height: size.height,
+                    },
+                    &mut event_f,
+                  );
                 },
-                // Input event
+                // Keyboard input event
                 WinitWindowEvent::KeyboardInput { event, .. } => {
-                  // Send a keyboard event
                   match event.physical_key {
                     PhysicalKey::Code(key_code) => {
-                      let keyboard_event = Event::Keyboard {
-                        key: key_code,
-                        is_pressed: event.state.is_pressed()
-                      };
-                      // First try to handle it internally, if correctly handled
-                      // request a new frame
-                      if state.input(&keyboard_event) {
-                        state.viewport().desc.window.request_redraw();
-                        return;
-                      }
-                      // Then execute the application handler
-                      event_f(self, &keyboard_event);
+                      // Send a keyboard input event
+                      self.on_event(
+                        &mut engine_state,
+                        &Event::KeyboardInput {
+                          key: key_code,
+                          is_pressed: event.state.is_pressed()
+                        },
+                        &mut event_f,
+                      );
                     },
                     PhysicalKey::Unidentified(_) => {}
                   }
                 },
+                // Mouse moved
+                WinitWindowEvent::CursorMoved {
+                  device_id: _,
+                  position } => {
+                    // Send a mouse moved event
+                    self.on_event(
+                      &mut engine_state,
+                      &Event::MouseMoved {
+                        x: position.x as u32,
+                        y: position.y as u32,
+                      },
+                      &mut event_f,
+                    );
+                },
+                // Mouse clicked
+                WinitWindowEvent::MouseInput {
+                  device_id: _,
+                  state,
+                  button } => {
+                    // Send a mouse input event
+                    self.on_event(
+                      &mut engine_state,
+                      &Event::MouseInput {
+                        button: *button,
+                        is_pressed: state.is_pressed(),
+                      },
+                      &mut event_f,
+                    );
+                  }
                 // New frame requested
                 // Only executes if the window id is the same as the one handled by the engine
                 //
                 // This is where the main loop runs on
-                WinitWindowEvent::RedrawRequested if window_id == state.viewport().desc.window.id() => {
+                WinitWindowEvent::RedrawRequested if window_id == engine_state.viewport().desc.window.id() => {
                   // Should we stop?
                   if !self.running {
                     elwt.exit();
                   }
 
                   // Update the state
-                  state.update();
+                  engine_state.update();
 
                   // Update the upper application
                   update_f(self);
 
                   // Render the state
-                  state.render().expect("Failed to render");
+                  engine_state.render().expect("Failed to render");
 
                   // Render the upper application
                   render_f(self);
@@ -161,14 +188,24 @@ impl Engine {
               }
             },
             // Sometimes this will be called, and when it gets called it should just request a new frame
-            WinitEvent::AboutToWait => state.viewport().desc.window.request_redraw(),
+            WinitEvent::AboutToWait => engine_state.viewport().desc.window.request_redraw(),
             _ => {}
           }
         }).expect("Failed to run a loop");
       }
 
       /// Gets called from the event loop and replicate the events to the applications
-      fn on_event(&mut self, event: &Event, event_f: &mut impl FnMut(&mut Engine, &Event)) {
+      fn on_event(
+        &mut self,
+        engine_state: &mut State,
+        event: &Event,
+        event_f: &mut impl FnMut(&mut Engine, &Event)) {
+        // First try to handle it internally, if correctly handled request a new frame
+        if engine_state.input(&event) {
+          engine_state.viewport().desc.window.request_redraw();
+          return;
+        }
+
         match event {
           // Shutdown event, gets called when the engine should stop
           Event::Shutdown => {
@@ -180,7 +217,13 @@ impl Engine {
             width,
             height
           } => {
+            engine_state.resize(PhysicalSize {
+              width: *width,
+              height: *height
+            });
 
+            // Request a redraw just in case
+            engine_state.viewport().desc.window.request_redraw();
           }
           _ => {}
         }

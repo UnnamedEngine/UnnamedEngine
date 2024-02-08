@@ -35,7 +35,7 @@ impl Client {
         // Handle events
         match event {
           // Keyboard event
-          event::event::Event::Keyboard {
+          event::event::Event::KeyboardInput {
             key,
             is_pressed } => {
               if *is_pressed {
