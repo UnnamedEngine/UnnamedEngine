@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // ? Where the data that will be used during execution is defined and handled.
 
-use wgpu::{InstanceFlags};
+use wgpu::InstanceFlags;
 use winit::window::Window;
 
 use crate::{event::event::Event, renderer::{camera::{CameraController, CameraDescriptor}, middleware_renderer::MiddlewareRenderer}};

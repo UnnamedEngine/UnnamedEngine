@@ -9,7 +9,7 @@
 // ? Defines a middleware renderer that stores and executes everything related
 // ? to the graphics library.
 
-use wgpu::{util::DeviceExt, BindGroup, BindGroupLayout, Buffer, Device, TextureFormat};
+use wgpu::{util::DeviceExt, BindGroup, TextureFormat};
 
 use super::{camera::CameraController, texture::{self, Texture}};
 
