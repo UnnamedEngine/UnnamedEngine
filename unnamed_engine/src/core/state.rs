@@ -19,7 +19,7 @@ pub struct State {
   pub viewport: Viewport,
   device: wgpu::Device,
   queue: wgpu::Queue,
-  camera_controller: CameraController,
+  pub camera_controller: CameraController,
   middleware_renderer: MiddlewareRenderer,
   pub egui: EguiRenderer,
 }
@@ -68,19 +68,20 @@ impl State {
 
     let viewport = viewport.build(&adapter, &device);
 
-    let mut egui = EguiRenderer::new(
+    let egui = EguiRenderer::new(
       &device,
       viewport.format,
       None,
       1,
       &viewport.desc.window);
 
-    let camera_controller = CameraController::new(&device, &CameraDescriptor {
+    let camera_controller = CameraController::new(&device, CameraDescriptor {
       speed: 0.2,
-      aspect: viewport.config.width as f32 / viewport.config.height as f32,
       fovy: 45.0,
       near: 0.1,
-      far: 100.0
+      far: 100.0,
+      v_width: viewport.config.width as f32,
+      v_height: viewport.config.height as f32,
     });
 
     let middleware_renderer = MiddlewareRenderer::new(
