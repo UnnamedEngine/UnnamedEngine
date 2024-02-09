@@ -13,14 +13,15 @@ use std::sync::Arc;
 use wgpu::InstanceFlags;
 use winit::window::Window;
 
-use crate::{event::event::Event, renderer::{camera::{CameraController, CameraDescriptor}, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}}};
+use crate::{event::event::Event, gui::egui_renderer::EguiRenderer, renderer::{camera::{CameraController, CameraDescriptor}, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}}};
 
 pub struct State {
-  viewport: Viewport,
+  pub viewport: Viewport,
   device: wgpu::Device,
   queue: wgpu::Queue,
   camera_controller: CameraController,
   middleware_renderer: MiddlewareRenderer,
+  pub egui: EguiRenderer,
 }
 
 impl State {
@@ -67,6 +68,13 @@ impl State {
 
     let viewport = viewport.build(&adapter, &device);
 
+    let mut egui = EguiRenderer::new(
+      &device,
+      viewport.format,
+      None,
+      1,
+      &viewport.desc.window);
+
     let camera_controller = CameraController::new(&device, &CameraDescriptor {
       speed: 0.2,
       aspect: viewport.config.width as f32 / viewport.config.height as f32,
@@ -88,11 +96,8 @@ impl State {
       queue,
       camera_controller,
       middleware_renderer,
+      egui,
     }
-  }
-
-  pub fn viewport(&self) -> &Viewport {
-    &self.viewport
   }
 
   pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
@@ -116,6 +121,7 @@ impl State {
       &self.device,
       &self.queue,
       &self.camera_controller,
+      &mut self.egui,
     )
   }
 }

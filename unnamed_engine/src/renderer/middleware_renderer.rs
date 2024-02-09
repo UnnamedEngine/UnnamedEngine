@@ -9,9 +9,12 @@
 // ? Defines a middleware renderer that stores and executes everything related
 // ? to the graphics library.
 
+use egui_wgpu::ScreenDescriptor;
 use wgpu::{util::DeviceExt, BindGroup, TextureFormat};
 
-use super::{camera::CameraController, texture::{self, Texture}, viewport::{self, Viewport}};
+use crate::gui::{egui_renderer::EguiRenderer, gui::gui};
+
+use super::{camera::CameraController, texture::{self, Texture}, viewport::Viewport};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -193,6 +196,7 @@ impl MiddlewareRenderer {
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     camera_controller: &CameraController,
+    egui: &mut EguiRenderer,
   ) -> Result<(), wgpu::SurfaceError> {
     let output = viewport.get_current_texture();
 
@@ -234,6 +238,21 @@ impl MiddlewareRenderer {
       render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
       render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
     }
+
+    let screen_descriptor = ScreenDescriptor {
+      size_in_pixels: [viewport.config.width, viewport.config.height],
+      pixels_per_point: viewport.desc.window.scale_factor() as f32,
+    };
+
+    egui.draw(
+      &device,
+      &queue,
+      &mut encoder,
+      &viewport.desc.window,
+      &view,
+      screen_descriptor,
+      |ui| gui(ui),
+    );
 
     // Submit will accept anything that implements IntoIter
     queue.submit(std::iter::once(encoder.finish()));

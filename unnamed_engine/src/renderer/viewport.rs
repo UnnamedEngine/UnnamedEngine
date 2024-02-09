@@ -77,5 +77,9 @@ impl Viewport {
       .get_current_texture()
       .expect("Failed to acquire next swap chain texture")
   }
+
+  pub fn set_title(&mut self, title: &str) {
+    self.desc.window.set_title(title);
+  }
 }
 

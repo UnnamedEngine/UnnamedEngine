@@ -3,6 +3,8 @@
     ".\\unnamed_engine\\Cargo.toml",
     ".\\unnamed_server\\Cargo.toml",
     ".\\unnamed_client\\Cargo.toml",
+    ".\\unnamed_engine\\Cargo.toml",
+    ".\\unnamed_engine\\Cargo.toml"
   ],
   "editor.rulers": [
     {
