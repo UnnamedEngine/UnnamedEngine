@@ -12,6 +12,11 @@
 - Added `MouseInput` event
 - Renamed `Keyboard` event to `KeyboardInput`
 - `Resize` event is now properly handled
+- Added `egui`
+- Added `egui-wgpu`
+- Added `egui-winit`
+- Created `EguiRenderer` to abstract the rendering of the gui
+- Created `gui/gui.rs` to contain all the egui rendering
 
 ### 0.0.8d - 08/02/2024
 
