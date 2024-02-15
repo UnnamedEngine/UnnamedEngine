@@ -132,4 +132,8 @@ impl Renderer {
       &mut self.egui,
     )
   }
+
+  pub fn request_redraw(&mut self) {
+    self.viewport.desc.window.request_redraw();
+  }
 }

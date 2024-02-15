@@ -33,8 +33,8 @@ impl Engine {
     start_f: impl FnOnce(&mut Engine),
     update_f: impl FnMut(&mut Engine),
     render_f: impl FnMut(&mut Engine),
-    event_f: impl FnMut(&mut Engine, &Event))
-    {
+    event_f: impl FnMut(&mut Engine, &Event),
+    ) {
       // Initializes the logger
       let env = Env::default()
         .filter_or("MY_LOG_LEVEL", "info")
@@ -186,7 +186,7 @@ impl Engine {
             engine_state.renderer.egui.handle_input(&mut engine_state.renderer.viewport.desc.window, &event);
           },
           // Sometimes this will be called, and when it gets called it should just request a new frame
-          WinitEvent::AboutToWait => engine_state.renderer.viewport.desc.window.request_redraw(),
+          WinitEvent::AboutToWait => engine_state.renderer.request_redraw(),
           _ => {}
         }
       }).expect("Failed to run a loop");
@@ -200,7 +200,7 @@ impl Engine {
     event_f: &mut impl FnMut(&mut Engine, &Event)) {
     // First try to handle it internally, if correctly handled request a new frame
     if engine_state.process_events(&event) {
-      engine_state.renderer.viewport.desc.window.request_redraw();
+      engine_state.renderer.request_redraw();
       return;
     }
 
