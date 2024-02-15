@@ -1,4 +1,4 @@
-use egui::{Align2, Context};
+use egui::Context;
 
 pub fn gui(ui: &Context) {
   egui::Window::new("Test")

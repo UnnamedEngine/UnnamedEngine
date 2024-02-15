@@ -1,5 +1,6 @@
 ## 0.0.11d - 15/02/2024
 
+- Refactored description comments
 - Editor project
 
 ## 0.0.10d - 09/02/2024

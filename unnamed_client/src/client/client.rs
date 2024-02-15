@@ -1,14 +1,11 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ CLIENT                //
-////////////////////////////////////////////////////////////////////////////////
-// ? Defines and implements the basic Client wrapper.
+//! ## Client
+//!
+//! Defines and implements the client application.
 use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}};
 
+/// ## Client
+///
+/// This is a client application that contains the entire engine.
 pub struct Client {
   engine: Engine,
 }

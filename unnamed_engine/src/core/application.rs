@@ -1,14 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB                   //
-////////////////////////////////////////////////////////////////////////////////
-// ? This file contains the main Application struct, responsible for providing
-// ? a way to create applications on top of the engine
-
+//! ## Application
+//!
+//! Responsible for providing a way to create applications on top of the engine.
 use crate::event::event::Event;
 
 pub struct ApplicationDescriptor {

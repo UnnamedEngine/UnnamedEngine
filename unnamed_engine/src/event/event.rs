@@ -1,14 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB                   //
-////////////////////////////////////////////////////////////////////////////////
-// ? Defines the events that will be used internally and passed down to the
-// ? applications.
-
+//! ## Event
+//!
+//! Defines the events that will be used internally and passed the applications.
 pub use winit::keyboard::KeyCode;
 pub use winit::event::MouseButton;
 

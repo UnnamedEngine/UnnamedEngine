@@ -1,14 +1,11 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ EDITOR                //
-////////////////////////////////////////////////////////////////////////////////
-// ? Defines and implements the basic Editor wrapper.
+//! ## Editor
+//!
+//! Defines and implements the editor application.
 use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}};
 
+/// ## Editor
+///
+/// This is an editor application that contains the entire engine alongside the editor tools.
 pub struct Editor {
   engine: Engine,
 }

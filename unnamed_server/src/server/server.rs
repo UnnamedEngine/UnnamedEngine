@@ -1,14 +1,12 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ SERVER                //
-////////////////////////////////////////////////////////////////////////////////
-// ? Defines and implements the Server wrapper.
+//! ## Server
+//!
+//! Defines and implements the server application.
 use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}};
 
+/// ## Server
+///
+/// This is a server application that contains the server and some tooling, its intended to be
+/// executed for dedicated servers.
 pub struct Server {
     engine: Engine,
 }

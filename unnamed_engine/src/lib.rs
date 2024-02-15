@@ -11,10 +11,3 @@ pub mod core;
 pub mod renderer;
 pub mod event;
 pub mod gui;
-
-////////////////////////////////////////////////////////////////////////////////
-// Tests
-#[cfg(test)]
-mod tests {
-  use super::*;
-}

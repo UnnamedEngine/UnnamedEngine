@@ -1,13 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB                   //
-////////////////////////////////////////////////////////////////////////////////
-// ? This file contains the main Engine struct, its where the abstract methods
-// ? are called and the general flow of execution is defined.
+//! ## Engine
+//!
+//! Defines the engine struct.
 use super::state::State;
 
 use crate::event::event::Event;
@@ -17,6 +10,10 @@ use winit::{
   dpi::PhysicalSize, event::{Event as WinitEvent, WindowEvent as WinitWindowEvent}, event_loop::EventLoop, keyboard::PhysicalKey, window::WindowBuilder
 };
 
+/// ## Engine
+///
+/// Main struct of UnnamedEngine, its the core wrapper that contains the upper abstract methods and
+/// defines the general flow of execution.
 pub struct Engine {
   running: bool,
   title: String,
@@ -31,8 +28,6 @@ impl Engine {
   }
 
   /// Starts the engine
-  ///
-  /// This method is the only one that should be called from the application
   pub fn start(
     &mut self,
     start_f: impl FnOnce(&mut Engine),

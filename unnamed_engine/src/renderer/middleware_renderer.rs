@@ -1,14 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-//                ██╗   ██╗███╗   ██╗███████╗███╗   ██╗                       //
-//                ██║   ██║████╗  ██║██╔════╝████╗  ██║                       //
-//                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
-//                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
-//                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ LIB                   //
-////////////////////////////////////////////////////////////////////////////////
-// ? Defines a middleware renderer that stores and executes everything related
-// ? to the graphics library.
-
+//! ## Middleware Renderer
+//!
+//! Defines a middleware that stores and executes everything related to the graphics library.
 use egui_wgpu::ScreenDescriptor;
 use wgpu::{util::DeviceExt, BindGroup, TextureFormat};
 
