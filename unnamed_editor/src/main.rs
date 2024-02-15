@@ -4,15 +4,14 @@
 //                ██║   ██║██╔██╗ ██║█████╗  ██╔██╗ ██║                       //
 //                ██║   ██║██║╚██╗██║██╔══╝  ██║╚██╗██║                       //
 //                ╚██████╔╝██║ ╚████║███████╗██║ ╚████║                       //
-//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ SERVER                //
+//                 ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═══╝ EDITOR                //
 ////////////////////////////////////////////////////////////////////////////////
-// ? Build helper.
-extern crate winres;
+// ? Entry-point for the editor.
+mod editor;
+
+use editor::editor::Editor;
 
 fn main() {
-  if cfg!(target_os = "windows") {
-    let mut res = winres::WindowsResource::new();
-    res.set_icon("../resource/branding/unnamed_engine_icon.ico");
-    res.compile().expect("Failed to set server binary icon during compilation");
-  }
+    let mut editor = Editor::new("UnnamedEditor".to_string());
+    editor.start();
 }

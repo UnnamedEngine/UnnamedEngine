@@ -1,3 +1,7 @@
+## 0.0.11d - 15/02/2024
+
+- Editor project
+
 ## 0.0.10d - 09/02/2024
 
 - Aspect is now changed to mirror window resizing

@@ -1,0 +1,11 @@
+[package]
+name = "unnamed_editor"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+unnamed_engine ={ path = "../unnamed_engine"}
+
+[build-dependencies]
+winres = "0.1"

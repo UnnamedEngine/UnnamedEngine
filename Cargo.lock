@@ -2054,6 +2054,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "unnamed_editor"
+version = "0.1.0"
+dependencies = [
+ "unnamed_engine",
+ "winres",
+]
+
+[[package]]
 name = "unnamed_engine"
 version = "0.1.0"
 dependencies = [
