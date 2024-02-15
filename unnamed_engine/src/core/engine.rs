@@ -73,7 +73,7 @@ impl Engine {
 
       let mut engine_state = State::new((window.into(), wgpu::Color::BLACK)).await;
 
-      let my_window_id = engine_state.viewport.desc.window.id();
+      let my_window_id = engine_state.renderer.viewport.desc.window.id();
 
       event_loop.run(move |event, elwt| {
         match event {
@@ -103,7 +103,7 @@ impl Engine {
               // Scale changed event
               WinitWindowEvent::ScaleFactorChanged { .. } => {
                 // Create and dispatch resize event
-                let size = engine_state.viewport.desc.window.inner_size();
+                let size = engine_state.renderer.viewport.desc.window.inner_size();
                 self.on_event(
                   &mut engine_state,
                   &Event::Resize {
@@ -163,7 +163,7 @@ impl Engine {
               // Only executes if the window id is the same as the one handled by the engine
               //
               // This is where the main loop runs on
-              WinitWindowEvent::RedrawRequested if window_id == engine_state.viewport.desc.window.id() => {
+              WinitWindowEvent::RedrawRequested if window_id == engine_state.renderer.viewport.desc.window.id() => {
                 // Should we stop?
                 if !self.running {
                   elwt.exit();
@@ -183,10 +183,10 @@ impl Engine {
               },
               _ => {}
             }
-            engine_state.egui.handle_input(&mut engine_state.viewport.desc.window, &event);
+            engine_state.renderer.egui.handle_input(&mut engine_state.renderer.viewport.desc.window, &event);
           },
           // Sometimes this will be called, and when it gets called it should just request a new frame
-          WinitEvent::AboutToWait => engine_state.viewport.desc.window.request_redraw(),
+          WinitEvent::AboutToWait => engine_state.renderer.viewport.desc.window.request_redraw(),
           _ => {}
         }
       }).expect("Failed to run a loop");
@@ -199,8 +199,8 @@ impl Engine {
     event: &Event,
     event_f: &mut impl FnMut(&mut Engine, &Event)) {
     // First try to handle it internally, if correctly handled request a new frame
-    if engine_state.input(&event) {
-      engine_state.viewport.desc.window.request_redraw();
+    if engine_state.process_events(&event) {
+      engine_state.renderer.viewport.desc.window.request_redraw();
       return;
     }
 
@@ -219,11 +219,6 @@ impl Engine {
           width: *width,
           height: *height
         });
-
-        engine_state.camera_controller.update_viewport(*width, *height);
-
-        // Request a redraw just in case
-        engine_state.viewport.desc.window.request_redraw();
       }
       _ => {}
     }

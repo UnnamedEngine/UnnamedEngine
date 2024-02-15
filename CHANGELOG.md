@@ -2,6 +2,9 @@
 
 - Refactored description comments
 - Editor project
+- Created `Renderer` to abstract rendering
+- Moved rendering logic from `core/state.rs` to `renderer/renderer.rs`
+- Moved remaining resize logic from `core/engine.rs` to `renderer/rendere.rs`
 
 ## 0.0.10d - 09/02/2024
 

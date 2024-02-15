@@ -5,3 +5,4 @@ pub mod viewport;
 pub mod middleware_renderer;
 pub mod texture;
 pub mod camera;
+pub mod renderer;
