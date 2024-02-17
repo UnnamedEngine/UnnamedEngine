@@ -3,7 +3,7 @@
 //! Defines the engine struct.
 use super::state::State;
 
-use crate::event::event::Event;
+use crate::{event::event::Event, input::{input_manager::InputManager, keyboard::Keyboard}};
 
 use env_logger::Env;
 use winit::{
@@ -17,14 +17,23 @@ use winit::{
 pub struct Engine {
   running: bool,
   title: String,
+  pub input_manager: InputManager,
 }
 
 impl Engine {
   pub fn new(title: String) -> Self {
+    let input_manager = InputManager::new();
+
     Engine {
       running: false,
       title,
+      input_manager,
     }
+  }
+
+  /// Exposes the keyboard
+  pub fn keyboard(&mut self) -> &Keyboard {
+    &self.input_manager.keyboard
   }
 
   /// Starts the engine
@@ -149,20 +158,37 @@ impl Engine {
                 device_id: _,
                 state,
                 button } => {
-                  // Send a mouse input event
-                  self.on_event(
-                    &mut engine_state,
-                    &Event::MouseInput {
-                      button: *button,
-                      is_pressed: state.is_pressed(),
-                    },
-                    &mut event_f,
-                  );
-                }
+                // Send a mouse input event
+                self.on_event(
+                  &mut engine_state,
+                  &Event::MouseInput {
+                    button: *button,
+                    is_pressed: state.is_pressed(),
+                  },
+                  &mut event_f,
+                );
+              }
               // New frame requested
               // Only executes if the window id is the same as the one handled by the engine
               //
               // This is where the main loop runs on
+              WinitWindowEvent::MouseWheel {
+                delta,
+                ..
+              } => {
+                match delta {
+                  winit::event::MouseScrollDelta::LineDelta(x, y) => {
+                    self.on_event(
+                      &mut engine_state,
+                      &Event::MouseScroll {
+                        delta: (*x, *y)
+                      },
+                      &mut event_f,
+                    );
+                  },
+                  _ => {},
+                }
+              },
               WinitWindowEvent::RedrawRequested if window_id == engine_state.renderer.viewport.desc.window.id() => {
                 // Should we stop?
                 if !self.running {
@@ -199,10 +225,13 @@ impl Engine {
     event: &Event,
     event_f: &mut impl FnMut(&mut Engine, &Event)) {
     // First try to handle it internally, if correctly handled request a new frame
-    if engine_state.process_events(&event) {
+    if engine_state.process_events(event) {
       engine_state.renderer.request_redraw();
       return;
     }
+
+    // Handle events for the input manager
+    self.input_manager.process_events(event);
 
     match event {
       // Shutdown event, gets called when the engine should stop
@@ -219,7 +248,7 @@ impl Engine {
           width: *width,
           height: *height
         });
-      }
+      },
       _ => {}
     }
 

@@ -1,7 +1,7 @@
 //! ## Client
 //!
 //! Defines and implements the client application.
-use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}};
+use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}, log::info};
 
 /// ## Client
 ///
@@ -34,17 +34,18 @@ impl Client {
           // Keyboard event
           event::event::Event::KeyboardInput {
             key,
-            is_pressed } => {
-              if *is_pressed {
-                match key {
-                  // Engine should stop
-                  KeyCode::Escape => {
-                    engine.stop();
-                  }
-                  _ => {},
+            is_pressed,
+          } => {
+            if *is_pressed {
+              match key {
+                // Engine should stop
+                KeyCode::Escape => {
+                  engine.stop();
                 }
+                _ => {},
               }
-            },
+            }
+          },
           _ => {}
         }
       });

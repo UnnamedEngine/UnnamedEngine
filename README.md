@@ -19,15 +19,15 @@ Open-source game engine made to power high performant simulation games. The main
 - [ ] Web
 
 ## Current Features
-- [ ] Async Logger
-- [ ] Event System
-- [ ] Config System
-- [ ] Object Parsing
-- [ ] Network System
-- [ ] Entity Component System
-- [ ] Hot-Reloading Scripting
-- [ ] Graphics Renderer
-- [ ] Audio Renderer
+- [ ] Event system
+- [ ] Input handler
+- [ ] Configuration system
+- [ ] Client-server architecture
+- [ ] Rendering abstraction
+- [ ] Editor interface
+- [ ] Hot-reloading scripting
+- [ ] Entity component system
+- [ ] Script syntax highlight
 
 # Building
 
@@ -42,3 +42,5 @@ cargo build --bin unnamed_client
 ```
 cargo build --bin unnamed_server
 ```
+
+# [License](./LICENSE)

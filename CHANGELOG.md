@@ -1,3 +1,10 @@
+## 0.0.12d - 17/02/2024
+
+- Added `MouseScroll` event
+- Added `InputManager`
+- Added `Keyboard` wrapper
+- Added `Mouse` wrapper
+
 ## 0.0.11d - 15/02/2024
 
 - Refactored description comments

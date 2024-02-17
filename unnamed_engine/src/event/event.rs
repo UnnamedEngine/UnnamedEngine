@@ -4,6 +4,8 @@
 pub use winit::keyboard::KeyCode;
 pub use winit::event::MouseButton;
 
+/// All the possible events for UnnamedEngine are registered here.
+#[derive(Debug, Clone, Copy)]
 pub enum Event {
   Shutdown,
   Resize {
@@ -21,5 +23,8 @@ pub enum Event {
   MouseInput {
     button: MouseButton,
     is_pressed: bool,
+  },
+  MouseScroll {
+    delta: (f32, f32),
   }
 }
