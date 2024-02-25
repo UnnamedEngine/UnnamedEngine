@@ -1,3 +1,11 @@
+## 0.0.13d - 25/02/2024
+
+- Added `quinn`
+- Added `rustls`
+- Added `Networking`
+- Added `networking/common` to handle commong networking logic
+- `engine.start()` now starts a server and a client that connects to it
+
 ## 0.0.12d - 17/02/2024
 
 - Added `MouseScroll` event

@@ -1,11 +1,15 @@
 //! ## Engine
 //!
 //! Defines the engine struct.
+use std::sync::Arc;
+
 use super::state::State;
 
-use crate::{event::event::Event, input::{input_manager::InputManager, keyboard::Keyboard}};
+use crate::{event::event::Event, input::{input_manager::InputManager, keyboard::Keyboard}, networking::common::{make_server_endpoint, run_client, run_server}};
 
 use env_logger::Env;
+use quinn::Endpoint;
+use tokio::runtime::Runtime;
 use winit::{
   dpi::PhysicalSize, event::{Event as WinitEvent, WindowEvent as WinitWindowEvent}, event_loop::EventLoop, keyboard::PhysicalKey, window::WindowBuilder
 };
@@ -51,6 +55,16 @@ impl Engine {
       env_logger::init_from_env(env);
 
       start_f(self);
+
+      let runtime = Runtime::new().unwrap();
+
+      runtime.block_on(async move {
+        let server_addr = "127.0.0.1:32732".parse().unwrap();
+        let (server_endpoint, server_cert) = make_server_endpoint(server_addr).unwrap();
+
+        tokio::spawn(run_server(server_endpoint));
+        tokio::spawn(run_client(server_addr, server_cert));
+      });
 
       self.running = true;
       tokio::runtime::Runtime::new().unwrap().block_on(self.run(update_f, render_f, event_f));
