@@ -20,5 +20,6 @@ egui-wgpu = "0.26.0"
 egui-winit = "0.26.0"
 quinn = "0.10.0"
 rustls = { version = "*", features = ["dangerous_configuration", "quic"] }
+instant = "0.1.12"
 
 rcgen = "0.12.1"

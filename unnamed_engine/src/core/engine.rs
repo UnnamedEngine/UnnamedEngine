@@ -1,14 +1,11 @@
 //! ## Engine
 //!
 //! Defines the engine struct.
-use std::sync::Arc;
-
 use super::state::State;
 
 use crate::{event::event::Event, input::{input_manager::InputManager, keyboard::Keyboard}, networking::common::{make_server_endpoint, run_client, run_server}};
 
 use env_logger::Env;
-use quinn::Endpoint;
 use tokio::runtime::Runtime;
 use winit::{
   dpi::PhysicalSize, event::{Event as WinitEvent, WindowEvent as WinitWindowEvent}, event_loop::EventLoop, keyboard::PhysicalKey, window::WindowBuilder
@@ -46,7 +43,7 @@ impl Engine {
     start_f: impl FnOnce(&mut Engine),
     update_f: impl FnMut(&mut Engine),
     render_f: impl FnMut(&mut Engine),
-    event_f: impl FnMut(&mut Engine, &Event),
+    event_f: impl FnMut(&mut Engine, Event),
     ) {
       // Initializes the logger
       let env = Env::default()
@@ -86,7 +83,7 @@ impl Engine {
     &mut self,
     mut update_f: impl FnMut(&mut Engine),
     mut render_f: impl FnMut(&mut Engine),
-    mut event_f: impl FnMut(&mut Engine, &Event))
+    mut event_f: impl FnMut(&mut Engine, Event))
     {
       let event_loop = EventLoop::new()
         .expect("Could not create event loop");
@@ -94,6 +91,7 @@ impl Engine {
         .expect("Could not create window");
       window.set_title(&self.title);
 
+      let mut last_render_time = instant::Instant::now();
       let mut engine_state = State::new((window.into(), wgpu::Color::BLACK)).await;
 
       let my_window_id = engine_state.renderer.viewport.desc.window.id();
@@ -108,7 +106,7 @@ impl Engine {
               // Close event
               WinitWindowEvent::CloseRequested => {
                 // Create and dispatch shutdown event
-                self.on_event(&mut engine_state, &Event::Shutdown, &mut event_f);
+                self.on_event(&mut engine_state, Event::Shutdown, &mut event_f);
               },
               // Resize event
               WinitWindowEvent::Resized(physical_size) => {
@@ -116,7 +114,7 @@ impl Engine {
                 // TODO make it work as an event
                 self.on_event(
                   &mut engine_state,
-                  &Event::Resize {
+                  Event::Resize {
                     width: physical_size.width,
                     height: physical_size.height,
                   },
@@ -129,7 +127,7 @@ impl Engine {
                 let size = engine_state.renderer.viewport.desc.window.inner_size();
                 self.on_event(
                   &mut engine_state,
-                  &Event::Resize {
+                  Event::Resize {
                     width: size.width,
                     height: size.height,
                   },
@@ -143,7 +141,7 @@ impl Engine {
                     // Send a keyboard input event
                     self.on_event(
                       &mut engine_state,
-                      &Event::KeyboardInput {
+                      Event::KeyboardInput {
                         key: key_code,
                         is_pressed: event.state.is_pressed()
                       },
@@ -160,7 +158,7 @@ impl Engine {
                   // Send a mouse moved event
                   self.on_event(
                     &mut engine_state,
-                    &Event::MouseMoved {
+                    Event::MouseMoved {
                       x: position.x as u32,
                       y: position.y as u32,
                     },
@@ -175,7 +173,7 @@ impl Engine {
                 // Send a mouse input event
                 self.on_event(
                   &mut engine_state,
-                  &Event::MouseInput {
+                  Event::MouseInput {
                     button: *button,
                     is_pressed: state.is_pressed(),
                   },
@@ -194,7 +192,7 @@ impl Engine {
                   winit::event::MouseScrollDelta::LineDelta(x, y) => {
                     self.on_event(
                       &mut engine_state,
-                      &Event::MouseScroll {
+                      Event::MouseScroll {
                         delta: (*x, *y)
                       },
                       &mut event_f,
@@ -209,8 +207,12 @@ impl Engine {
                   elwt.exit();
                 }
 
+                let now = instant::Instant::now();
+                let dt = now - last_render_time;
+                last_render_time = now;
+
                 // Update the state
-                engine_state.update();
+                engine_state.update(dt);
 
                 // Update the upper application
                 update_f(self);
@@ -236,8 +238,8 @@ impl Engine {
   fn on_event(
     &mut self,
     engine_state: &mut State,
-    event: &Event,
-    event_f: &mut impl FnMut(&mut Engine, &Event)) {
+    event: Event,
+    event_f: &mut impl FnMut(&mut Engine, Event)) {
     // First try to handle it internally, if correctly handled request a new frame
     if engine_state.process_events(event) {
       engine_state.renderer.request_redraw();
@@ -259,8 +261,8 @@ impl Engine {
         height
       } => {
         engine_state.resize(PhysicalSize {
-          width: *width,
-          height: *height
+          width: width,
+          height: height
         });
       },
       _ => {}

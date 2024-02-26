@@ -2,14 +2,14 @@
 //!
 //! Defines and implements the renderer and the related structs.
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use wgpu::InstanceFlags;
 use winit::window::Window;
 
 use crate::{event::event::Event, gui::egui_renderer::EguiRenderer};
 
-use super::{camera::{CameraController, CameraDescriptor}, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}};
+use super::{camera::CameraController, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}};
 
 /// ## Renderer
 ///
@@ -77,14 +77,10 @@ impl Renderer {
 
     let camera_controller = CameraController::new(
       &device,
-      CameraDescriptor {
-        speed: 0.2,
-        fovy: 45.0,
-        near: 0.1,
-        far: 100.0,
-        v_width: viewport.config.width as f32,
-        v_height: viewport.config.height as f32,
-      }
+      4.0,
+      0.1,
+      viewport.config.width,
+      viewport.config.height,
     );
 
     let middleware = MiddlewareRenderer::new(
@@ -107,19 +103,19 @@ impl Renderer {
   pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
     if new_size.width > 0 && new_size.height > 0 {
       self.viewport.resize(&self.device, new_size);
-      self.camera_controller.update_viewport(new_size.width, new_size.height);
+      self.camera_controller.projection.resize(new_size.width, new_size.height);
 
       // Request a redraw just in case
       self.viewport.desc.window.request_redraw();
     }
   }
 
-  pub fn process_events(&mut self, event: &Event) -> bool {
+  pub fn process_events(&mut self, event: Event) -> bool {
     self.camera_controller.process_events(event)
   }
 
-  pub fn update(&mut self) {
-    self.camera_controller.update();
+  pub fn update(&mut self, dt: Duration) {
+    self.camera_controller.update(dt);
     self.queue.write_buffer(&self.camera_controller.buffer, 0, bytemuck::cast_slice(&[self.camera_controller.uniform]));
   }
 

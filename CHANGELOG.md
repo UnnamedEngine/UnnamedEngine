@@ -1,3 +1,10 @@
+## 0.0.14d - 26/02/2024
+
+- Added `instant`
+- `Events` are no more passed as a borrow
+- Added barebones `Chunk` and `Voxel` (WIP)
+- BUG - Camera is not working anymore due to an attempt to introduce better movement and rotation
+
 ## 0.0.13d - 25/02/2024
 
 - Added `quinn`

@@ -36,7 +36,7 @@ impl Server {
                     event::event::Event::KeyboardInput {
                         key,
                         is_pressed } => {
-                            if *is_pressed {
+                            if is_pressed {
                                 match key {
                                     // Engine should stop
                                     KeyCode::Escape => {

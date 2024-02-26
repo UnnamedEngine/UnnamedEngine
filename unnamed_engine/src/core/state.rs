@@ -1,7 +1,7 @@
 //! ## State
 //!
 //! Runtime data.
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use winit::window::Window;
 
@@ -24,12 +24,12 @@ impl State {
     self.renderer.resize(new_size);
   }
 
-  pub fn process_events(&mut self, event: &Event) -> bool {
+  pub fn process_events(&mut self, event: Event) -> bool {
     self.renderer.process_events(event)
   }
 
-  pub fn update(&mut self) {
-    self.renderer.update();
+  pub fn update(&mut self, dt: Duration) {
+    self.renderer.update(dt);
   }
 
   pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {

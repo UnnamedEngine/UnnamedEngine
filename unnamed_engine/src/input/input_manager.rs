@@ -21,7 +21,7 @@ impl InputManager {
   }
 
   /// Handles the events and replicate then to other areas.
-  pub fn process_events(&mut self, event: &Event) {
+  pub fn process_events(&mut self, event: Event) {
     self.keyboard.process_events(event.clone());
     self.mouse.process_events(event.clone());
   }
