@@ -142,9 +142,9 @@ impl CameraController {
     height: u32,
   ) -> Self {
     let camera = Camera::new(
-      (0.0, 5.0, 10.0),
+      (0.0, 2.0, 5.0),
       cgmath::Deg(-90.0),
-      cgmath::Deg(-20.0)
+      cgmath::Deg(-45.0)
     );
 
     let projection = Projection::new(width, height, cgmath::Deg(45.0), 0.05, 1000.0);
@@ -244,18 +244,18 @@ impl CameraController {
           _ => false
         }
       },
-      Event::MouseMoved {
+      Event::MouseMotion {
         x,
         y,
       } => {
-        self.rotate_horizontal = x as f32;
-        self.rotate_vertical = y as f32;
+        self.rotate_horizontal = x;
+        self.rotate_vertical = y;
         true
       },
       Event::MouseScroll {
         delta,
       } => {
-        self.scroll = delta.0;
+        self.scroll = delta.1;
         true
       },
       _ => false
@@ -302,8 +302,8 @@ impl CameraController {
     self.uniform.update_view_proj(&self.camera, &self.projection);
   }
 
-  //pub fn update_viewport(&mut self, width: u32, height: u32) {
-  //  self.camera.desc.v_width = width as f32;
-  //  self.camera.desc.v_height = height as f32;
-  //}
+  pub fn resize(&mut self, width: u32, height: u32) {
+    self.projection.resize(width, height);
+  }
+
 }

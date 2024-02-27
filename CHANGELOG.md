@@ -1,3 +1,11 @@
+## 0.0.15d - 27/02/2024
+
+- Added `MouseMotion` event to represent mouse delta movement
+- Renamed `MouseMoved` to `MousePosition`
+- Added missing data to `CameraUniform` inside of `shader.wgsl`
+- Fixed `CameraController` using `u32`
+- Camera system now has working movement and rotation
+
 ## 0.0.14d - 26/02/2024
 
 - Added `instant`

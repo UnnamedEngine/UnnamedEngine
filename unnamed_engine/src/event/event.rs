@@ -16,7 +16,11 @@ pub enum Event {
     key: KeyCode,
     is_pressed: bool,
   },
-  MouseMoved {
+  MouseMotion {
+    x: f32,
+    y: f32,
+  },
+  MousePosition {
     x: u32,
     y: u32,
   },

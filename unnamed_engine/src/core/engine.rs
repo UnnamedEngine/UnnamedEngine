@@ -158,7 +158,7 @@ impl Engine {
                   // Send a mouse moved event
                   self.on_event(
                     &mut engine_state,
-                    Event::MouseMoved {
+                    Event::MousePosition {
                       x: position.x as u32,
                       y: position.y as u32,
                     },
@@ -226,6 +226,26 @@ impl Engine {
               _ => {}
             }
             engine_state.renderer.egui.handle_input(&mut engine_state.renderer.viewport.desc.window, &event);
+          },
+          WinitEvent::DeviceEvent {
+            device_id: _,
+            event,
+          } => {
+            match event {
+              winit::event::DeviceEvent::MouseMotion {
+                delta
+              } => {
+                self.on_event(
+                  &mut engine_state,
+                  Event::MouseMotion {
+                    x: delta.0 as f32,
+                    y: delta.1 as f32,
+                  },
+                  &mut event_f,
+                );
+              },
+              _ => {}
+            }
           },
           // Sometimes this will be called, and when it gets called it should just request a new frame
           WinitEvent::AboutToWait => engine_state.renderer.request_redraw(),
