@@ -37,19 +37,24 @@ impl Vertex {
 }
 
 const VERTICES: &[Vertex] = &[
-  Vertex { position: [-0.5, -0.5, 0.0], tex_coords: [0.0, 1.0] },
-  Vertex { position: [0.5, -0.5, 0.0],  tex_coords: [1.0, 1.0] },
-  Vertex { position: [-0.5, 0.5, 0.0],  tex_coords: [0.0, 0.0] },
-  Vertex { position: [0.5, 0.5, 0.0],   tex_coords: [1.0, 0.0] },
+  Vertex { position: [-0.5, -0.5, -0.5], tex_coords: [0.0, 1.0] },
+  Vertex { position: [ 0.5, -0.5, -0.5], tex_coords: [1.0, 1.0] },
+  Vertex { position: [-0.5,  0.5, -0.5], tex_coords: [0.0, 0.0] },
+  Vertex { position: [ 0.5,  0.5, -0.5], tex_coords: [1.0, 0.0] },
+  Vertex { position: [-0.5, -0.5,  0.5], tex_coords: [0.0, 1.0] },
+  Vertex { position: [ 0.5, -0.5,  0.5], tex_coords: [1.0, 1.0] },
+  Vertex { position: [-0.5,  0.5,  0.5], tex_coords: [0.0, 0.0] },
+  Vertex { position: [ 0.5,  0.5,  0.5], tex_coords: [1.0, 0.0] },
 ];
 
 const INDICES: &[u16] = &[
-  0, 1, 2,
-  2, 1, 3,
+  0, 1, 2, 2, 1, 3,
+  5, 4, 7, 7, 4, 6,
 ];
 
 
 pub struct MiddlewareRenderer {
+  depth_texture: Texture,
   diffuse_texture: Texture,
   diffuse_bind_group: BindGroup,
   shader: wgpu::ShaderModule,
@@ -64,7 +69,7 @@ impl MiddlewareRenderer {
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     camera_controller: &CameraController,
-    texture_format: TextureFormat,
+    viewport: &Viewport,
   ) -> Self {
     let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
       label: Some("texture_bind_group_layout"),
@@ -90,6 +95,7 @@ impl MiddlewareRenderer {
       ],
     });
 
+    let depth_texture = texture::Texture::create_depth_texture(&device, &viewport.config, "depth_texture");
     let diffuse_bytes = include_bytes!("../../res/dirt.png");
     let diffuse_texture = texture::Texture::from_bytes(device, queue, diffuse_bytes, "dirt.png").unwrap();
 
@@ -134,7 +140,7 @@ impl MiddlewareRenderer {
         module: &shader,
         entry_point: "fs_main",
         targets: &[Some(wgpu::ColorTargetState {
-          format: texture_format,
+          format: viewport.format,
           blend: Some(wgpu::BlendState::REPLACE),
           write_mask: wgpu::ColorWrites::ALL,
         })],
@@ -143,12 +149,18 @@ impl MiddlewareRenderer {
         topology: wgpu::PrimitiveTopology::TriangleList,
         strip_index_format: None,
         front_face: wgpu::FrontFace::Ccw,
-        cull_mode: None,
+        cull_mode: None, //Some(wgpu::Face::Back),
         unclipped_depth: false,
         polygon_mode: wgpu::PolygonMode::Fill,
         conservative: false,
       },
-      depth_stencil: None,
+      depth_stencil: Some(wgpu::DepthStencilState {
+        format: texture::Texture::DEPTH_FORMAT,
+        depth_write_enabled: true,
+        depth_compare: wgpu::CompareFunction::Less,
+        stencil: wgpu::StencilState::default(),
+        bias: wgpu::DepthBiasState::default(),
+      }),
       multisample: wgpu::MultisampleState {
         count: 1,
         mask: !0,
@@ -172,6 +184,7 @@ impl MiddlewareRenderer {
     let num_indices = INDICES.len() as u32;
 
     Self {
+      depth_texture,
       diffuse_texture,
       diffuse_bind_group,
       shader,
@@ -218,7 +231,14 @@ impl MiddlewareRenderer {
             },
           })
         ],
-        depth_stencil_attachment: None,
+        depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+          view: &self.depth_texture.view,
+          depth_ops: Some(wgpu::Operations {
+            load: wgpu::LoadOp::Clear(1.0),
+            store: wgpu::StoreOp::Store,
+          }),
+          stencil_ops: None,
+        }),
         timestamp_writes: None,
         occlusion_query_set: None,
       });
@@ -251,5 +271,9 @@ impl MiddlewareRenderer {
     output.present();
 
     Ok(())
+  }
+
+  pub fn resize(&mut self, device: &wgpu::Device, viewport: &Viewport) {
+    self.depth_texture = texture::Texture::create_depth_texture(device, &viewport.config, "depth_texture");
   }
 }

@@ -5,6 +5,9 @@
 - Added missing data to `CameraUniform` inside of `shader.wgsl`
 - Fixed `CameraController` using `u32`
 - Camera system now has working movement and rotation
+- Removed `Chunk`, `Voxel` and everything related
+- Added `create_depth_buffer` to `Texture`
+- Added a depth buffer to the renderer
 
 ## 0.0.14d - 26/02/2024
 

@@ -5,6 +5,5 @@ pub mod event;
 pub mod gui;
 pub mod input;
 pub mod networking;
-pub mod simulation;
 
 pub use log;

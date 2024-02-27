@@ -87,7 +87,7 @@ impl Renderer {
       &device,
       &queue,
       &camera_controller,
-      viewport.format,
+      &viewport,
     );
 
     Self {
@@ -104,6 +104,7 @@ impl Renderer {
     if new_size.width > 0 && new_size.height > 0 {
       self.viewport.resize(&self.device, new_size);
       self.camera_controller.resize(new_size.width, new_size.height);
+      self.middleware.resize(&self.device, &self.viewport);
 
       // Request a redraw just in case
       self.viewport.desc.window.request_redraw();
