@@ -2,6 +2,7 @@
 
 - Added instanced drawing
 - Added `Transform` to abstract 3d position, rotation and scale
+- Improved github workflows
 
 ## 0.0.15d - 27/02/2024
 

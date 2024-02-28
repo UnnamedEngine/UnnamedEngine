@@ -35,7 +35,7 @@ impl TransformRaw {
     use std::mem;
     wgpu::VertexBufferLayout {
       array_stride: mem::size_of::<TransformRaw>() as wgpu::BufferAddress,
-      // Shaders will only change to use the next instance when the shader starts processing a new
+      // Shader will only change to use the next instance when the shader starts processing a new
       // instance
       step_mode: wgpu::VertexStepMode::Instance,
       attributes: &[
