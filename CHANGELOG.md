@@ -1,3 +1,7 @@
+## 0.0.16d - 28/02/2024
+
+- Added instanced drawing
+
 ## 0.0.15d - 27/02/2024
 
 - Added `MouseMotion` event to represent mouse delta movement
