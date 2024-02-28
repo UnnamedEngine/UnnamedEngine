@@ -4,6 +4,8 @@
 - Added `Transform` to abstract 3d position, rotation and scale
 - Improved github workflows
 - `Texture` now handles its own `BindGroup`
+- Added `Screen` to serve as a buffer between rendering and presenting the result to the window
+- Added an example grayscale filter to `screen.wgsl`
 
 ## 0.0.15d - 27/02/2024
 

@@ -7,7 +7,7 @@ use wgpu::util::DeviceExt;
 
 use crate::gui::{egui_renderer::EguiRenderer, gui::gui};
 
-use super::{camera::CameraController, screen::Screen, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
+use super::{camera::CameraController, screen::{Screen, SCREEN_INDICES}, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -57,7 +57,7 @@ const INSTANCE_DISPLACEMENT: cgmath::Vector3<f32> = cgmath::Vector3::new(NUM_INS
 
 
 pub struct MiddlewareRenderer {
-  depth_texture: Texture,
+  texture_bind_group_layout: wgpu::BindGroupLayout,
   shader: wgpu::ShaderModule,
   pipeline: wgpu::RenderPipeline,
   vertex_buffer: wgpu::Buffer,
@@ -65,6 +65,7 @@ pub struct MiddlewareRenderer {
   transforms: Vec<Transform>,
   instance_buffer: wgpu::Buffer,
   num_indices: u32,
+  screen: Screen,
 
   test_texture: Texture,
 }
@@ -100,7 +101,8 @@ impl MiddlewareRenderer {
       ],
     });
 
-    let depth_texture = texture::Texture::create_depth_texture(&device, &viewport.config, "depth_texture");
+    let screen = Screen::new(device, viewport, &texture_bind_group_layout);
+
     let test_bytes = include_bytes!("../../res/dirt.png");
     let mut test_texture = texture::Texture::from_bytes(device, queue, test_bytes, "dirt.png").unwrap();
     test_texture.set_bind_group(device, &texture_bind_group_layout);
@@ -202,7 +204,7 @@ impl MiddlewareRenderer {
     );
 
     Self {
-      depth_texture,
+      texture_bind_group_layout,
       shader,
       pipeline,
       vertex_buffer,
@@ -210,6 +212,7 @@ impl MiddlewareRenderer {
       num_indices,
       transforms,
       instance_buffer,
+      screen,
       test_texture,
     }
   }
@@ -224,12 +227,12 @@ impl MiddlewareRenderer {
   ) -> Result<(), wgpu::SurfaceError> {
     let output = viewport.get_current_texture();
 
-    let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+    let renderer_view = &self.screen.diffuse_texture.view;
+    let window_view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
     let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
       label: Some("render_encoder"),
     });
-
 
     {
       let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -237,7 +240,7 @@ impl MiddlewareRenderer {
         color_attachments: &[
           // This is what @location(0) in the fragment shader targets
           Some(wgpu::RenderPassColorAttachment {
-            view: &view,
+            view: renderer_view,
             resolve_target: None,
             ops: wgpu::Operations {
               load: wgpu::LoadOp::Clear(wgpu::Color {
@@ -251,7 +254,7 @@ impl MiddlewareRenderer {
           })
         ],
         depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-          view: &self.depth_texture.view,
+          view: &self.screen.depth_texture.view,
           depth_ops: Some(wgpu::Operations {
             load: wgpu::LoadOp::Clear(1.0),
             store: wgpu::StoreOp::Store,
@@ -275,6 +278,39 @@ impl MiddlewareRenderer {
       render_pass.draw_indexed(0..self.num_indices, 0, 0..self.transforms.len() as _);
     }
 
+    {
+      let mut render_pass = encoder.begin_render_pass(
+        &wgpu::RenderPassDescriptor {
+          label: Some("render_pass"),
+          color_attachments: &[
+            Some(wgpu::RenderPassColorAttachment {
+              view: &window_view,
+              resolve_target: None,
+              ops: wgpu::Operations {
+                load: wgpu::LoadOp::Clear(wgpu::Color {
+                  r: 0.0,
+                  g: 0.0,
+                  b: 0.0,
+                  a: 1.0,
+                }),
+                store: wgpu::StoreOp::Store,
+              },
+            })
+          ],
+          depth_stencil_attachment: None,
+          timestamp_writes: None,
+          occlusion_query_set: None,
+        });
+
+      render_pass.set_pipeline(&self.screen.pipeline);
+      if let Some(screen_bind_group) = &self.screen.diffuse_texture.bind_group {
+        render_pass.set_bind_group(0, screen_bind_group, &[]);
+      }
+      render_pass.set_vertex_buffer(0, self.screen.vertex_buffer.slice(..));
+      render_pass.set_index_buffer(self.screen.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+      render_pass.draw_indexed(0..SCREEN_INDICES.len() as u32, 0, 0..1);
+    }
+
     let screen_descriptor = ScreenDescriptor {
       size_in_pixels: [viewport.config.width, viewport.config.height],
       pixels_per_point: viewport.desc.window.scale_factor() as f32,
@@ -285,7 +321,7 @@ impl MiddlewareRenderer {
       &queue,
       &mut encoder,
       &viewport.desc.window,
-      &view,
+      &window_view,
       screen_descriptor,
       |ui| gui(ui),
     );
@@ -298,6 +334,7 @@ impl MiddlewareRenderer {
   }
 
   pub fn resize(&mut self, device: &wgpu::Device, viewport: &Viewport) {
-    self.depth_texture = texture::Texture::create_depth_texture(device, &viewport.config, "depth_texture");
+    self.screen.resize(device, viewport, &self.texture_bind_group_layout);
+    //self.depth_texture = texture::Texture::create_depth_texture(device, &viewport.config, "depth_texture");
   }
 }

@@ -89,6 +89,8 @@ impl Texture {
     device: &wgpu::Device,
     config: &wgpu::SurfaceConfiguration,
     label: &str,
+    format: Option<wgpu::TextureFormat>,
+    flags: Option<wgpu::TextureUsages>,
   ) -> Self {
     let size = wgpu::Extent3d {
       width: config.width,
@@ -101,10 +103,8 @@ impl Texture {
       mip_level_count: 1,
       sample_count: 1,
       dimension: wgpu::TextureDimension::D2,
-      format: Self::DIFFUSE_FORMAT,
-      usage:
-        wgpu::TextureUsages::RENDER_ATTACHMENT |
-        wgpu::TextureUsages::TEXTURE_BINDING,
+      format: if let Some(texture_format) = format { texture_format } else { Self::DIFFUSE_FORMAT },
+      usage: if let Some(texture_flags) = flags { texture_flags } else { wgpu::TextureUsages::empty() },
       view_formats: &[],
     };
     let texture = device.create_texture(&desc);
@@ -118,7 +118,6 @@ impl Texture {
         mag_filter: wgpu::FilterMode::Linear,
         min_filter: wgpu::FilterMode::Linear,
         mipmap_filter: wgpu::FilterMode::Nearest,
-        compare: Some(wgpu::CompareFunction::LessEqual),
         lod_min_clamp: 0.0,
         lod_max_clamp: 100.0,
         ..Default::default()

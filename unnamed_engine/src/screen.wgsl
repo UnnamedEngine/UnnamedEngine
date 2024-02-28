@@ -25,7 +25,17 @@ var t_diffuse: texture_2d<f32>;
 @group(0) @binding(1)
 var s_diffuse: sampler;
 
+fn grayscale(color: vec4<f32>) -> vec4<f32> {
+  var lum = dot(color.rgb, vec3<f32>(0.2126, 0.7152, 0.0722));
+  return vec4<f32>(lum, lum, lum, color.a);
+}
+
 @fragment
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
-  return textureSample(t_diffuse, s_diffuse, in.tex_coords);
+  var texture = textureSample(t_diffuse, s_diffuse, in.tex_coords);
+  return texture;
 }
+
+
+
+
