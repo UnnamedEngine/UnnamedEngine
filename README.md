@@ -43,4 +43,9 @@ cargo build --bin unnamed_client
 cargo build --bin unnamed_server
 ```
 
+## Editor
+```
+cargo build --bin unnamed_editor
+```
+
 # [License](./LICENSE)

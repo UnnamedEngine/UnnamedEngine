@@ -3,11 +3,11 @@
 //! Defines a middleware that stores and executes everything related to the graphics library.
 use cgmath::{InnerSpace, Rotation3, Zero};
 use egui_wgpu::ScreenDescriptor;
-use wgpu::{util::DeviceExt, BindGroup};
+use wgpu::util::DeviceExt;
 
 use crate::gui::{egui_renderer::EguiRenderer, gui::gui};
 
-use super::{camera::CameraController, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
+use super::{camera::CameraController, screen::Screen, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -58,8 +58,6 @@ const INSTANCE_DISPLACEMENT: cgmath::Vector3<f32> = cgmath::Vector3::new(NUM_INS
 
 pub struct MiddlewareRenderer {
   depth_texture: Texture,
-  diffuse_texture: Texture,
-  diffuse_bind_group: BindGroup,
   shader: wgpu::ShaderModule,
   pipeline: wgpu::RenderPipeline,
   vertex_buffer: wgpu::Buffer,
@@ -67,6 +65,8 @@ pub struct MiddlewareRenderer {
   transforms: Vec<Transform>,
   instance_buffer: wgpu::Buffer,
   num_indices: u32,
+
+  test_texture: Texture,
 }
 
 impl MiddlewareRenderer {
@@ -101,23 +101,9 @@ impl MiddlewareRenderer {
     });
 
     let depth_texture = texture::Texture::create_depth_texture(&device, &viewport.config, "depth_texture");
-    let diffuse_bytes = include_bytes!("../../res/dirt.png");
-    let diffuse_texture = texture::Texture::from_bytes(device, queue, diffuse_bytes, "dirt.png").unwrap();
-
-    let diffuse_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-      label: Some("diffuse_bind_group"),
-      layout: &texture_bind_group_layout,
-      entries: &[
-        wgpu::BindGroupEntry {
-          binding: 0,
-          resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-        },
-        wgpu::BindGroupEntry {
-          binding: 1,
-          resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-        }
-      ]
-    });
+    let test_bytes = include_bytes!("../../res/dirt.png");
+    let mut test_texture = texture::Texture::from_bytes(device, queue, test_bytes, "dirt.png").unwrap();
+    test_texture.set_bind_group(device, &texture_bind_group_layout);
 
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
       label: Some("pipeline_layout"),
@@ -217,8 +203,6 @@ impl MiddlewareRenderer {
 
     Self {
       depth_texture,
-      diffuse_texture,
-      diffuse_bind_group,
       shader,
       pipeline,
       vertex_buffer,
@@ -226,6 +210,7 @@ impl MiddlewareRenderer {
       num_indices,
       transforms,
       instance_buffer,
+      test_texture,
     }
   }
 
@@ -278,7 +263,9 @@ impl MiddlewareRenderer {
       });
 
       render_pass.set_pipeline(&self.pipeline);
-      render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+      if let Some(test_texture) = &self.test_texture.bind_group {
+        render_pass.set_bind_group(0, test_texture, &[]);
+      }
       render_pass.set_bind_group(1, &camera_controller.bind_group, &[]);
       render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
 

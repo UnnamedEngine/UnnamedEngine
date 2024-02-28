@@ -3,6 +3,7 @@
 - Added instanced drawing
 - Added `Transform` to abstract 3d position, rotation and scale
 - Improved github workflows
+- `Texture` now handles its own `BindGroup`
 
 ## 0.0.15d - 27/02/2024
 
