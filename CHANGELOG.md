@@ -1,6 +1,7 @@
 ## 0.0.16d - 28/02/2024
 
 - Added instanced drawing
+- Added `Transform` to abstract 3d position, rotation and scale
 
 ## 0.0.15d - 27/02/2024
 
