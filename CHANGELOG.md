@@ -1,3 +1,7 @@
+## 0.0.17d - 29/02/2024
+
+- Improved `Screen` to handle its own rendering with `draw()`
+
 ## 0.0.16d - 28/02/2024
 
 - Added instanced drawing

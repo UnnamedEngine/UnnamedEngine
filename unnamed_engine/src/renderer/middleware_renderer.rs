@@ -7,7 +7,7 @@ use wgpu::util::DeviceExt;
 
 use crate::gui::{egui_renderer::EguiRenderer, gui::gui};
 
-use super::{camera::CameraController, screen::{Screen, SCREEN_INDICES}, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
+use super::{camera::CameraController, screen::Screen, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -278,38 +278,10 @@ impl MiddlewareRenderer {
       render_pass.draw_indexed(0..self.num_indices, 0, 0..self.transforms.len() as _);
     }
 
-    {
-      let mut render_pass = encoder.begin_render_pass(
-        &wgpu::RenderPassDescriptor {
-          label: Some("render_pass"),
-          color_attachments: &[
-            Some(wgpu::RenderPassColorAttachment {
-              view: &window_view,
-              resolve_target: None,
-              ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(wgpu::Color {
-                  r: 0.0,
-                  g: 0.0,
-                  b: 0.0,
-                  a: 1.0,
-                }),
-                store: wgpu::StoreOp::Store,
-              },
-            })
-          ],
-          depth_stencil_attachment: None,
-          timestamp_writes: None,
-          occlusion_query_set: None,
-        });
-
-      render_pass.set_pipeline(&self.screen.pipeline);
-      if let Some(screen_bind_group) = &self.screen.diffuse_texture.bind_group {
-        render_pass.set_bind_group(0, screen_bind_group, &[]);
-      }
-      render_pass.set_vertex_buffer(0, self.screen.vertex_buffer.slice(..));
-      render_pass.set_index_buffer(self.screen.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-      render_pass.draw_indexed(0..SCREEN_INDICES.len() as u32, 0, 0..1);
-    }
+    self.screen.draw(
+      &mut encoder,
+      &window_view,
+    );
 
     let screen_descriptor = ScreenDescriptor {
       size_in_pixels: [viewport.config.width, viewport.config.height],
