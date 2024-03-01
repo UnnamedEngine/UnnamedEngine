@@ -32,13 +32,7 @@ impl State {
 
   pub fn process_events(&mut self, event: Event) -> Result<(), Box<dyn Error>> {
     for module in &mut self.modules {
-      match module.process_events(event) {
-        Ok(_) => {},
-        Err(e) => {
-          log::error!("Failed to process events: {e}");
-          return Err(e);
-        }
-      }
+      module.process_events(event)?
     }
 
     Ok(())
@@ -46,13 +40,7 @@ impl State {
 
   pub fn update(&mut self, dt: instant::Duration) -> Result<(), Box<dyn Error>> {
     for module in &mut self.modules {
-      match module.update(dt) {
-        Ok(_) => {},
-        Err(e) => {
-          log::error!("Failed to update: {e}");
-          return Err(e);
-        }
-      }
+      module.update(dt)?
     }
 
     Ok(())
@@ -60,13 +48,7 @@ impl State {
 
   pub fn render(&mut self) -> Result<(), Box<dyn Error>> {
     for module in &mut self.modules {
-      match module.render() {
-        Ok(_) => {},
-        Err(e) => {
-          log::error!("Failed to render: {e}");
-          return Err(e);
-        }
-      }
+      module.render()?
     }
 
     Ok(())
