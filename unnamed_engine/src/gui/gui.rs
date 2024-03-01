@@ -19,6 +19,5 @@ pub fn gui(ui: &Context) {
       ui.label("Slider");
       ui.add(egui::Slider::new(&mut 0, 0..=100).text("number"));
       ui.end_row();
-
     });
 }

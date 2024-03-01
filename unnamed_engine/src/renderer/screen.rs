@@ -1,6 +1,9 @@
 use wgpu::util::DeviceExt;
 
-use super::{texture::{self, Texture}, viewport::Viewport};
+use super::{
+  texture::{self, Texture},
+  viewport::Viewport,
+};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -24,22 +27,32 @@ impl Vertex {
           offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
           shader_location: 1,
           format: wgpu::VertexFormat::Float32x2,
-        }
-      ]
+        },
+      ],
     }
   }
 }
 
 const SCREEN_VERTICES: &[Vertex] = &[
-  Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 1.0] }, // 0
-  Vertex { position: [ 1.0, -1.0, 0.0], tex_coords: [1.0, 1.0] }, // 1
-  Vertex { position: [-1.0,  1.0, 0.0], tex_coords: [0.0, 0.0] }, // 2
-  Vertex { position: [ 1.0,  1.0, 0.0], tex_coords: [1.0, 0.0] }, // 3
+  Vertex {
+    position: [-1.0, -1.0, 0.0],
+    tex_coords: [0.0, 1.0],
+  }, // 0
+  Vertex {
+    position: [1.0, -1.0, 0.0],
+    tex_coords: [1.0, 1.0],
+  }, // 1
+  Vertex {
+    position: [-1.0, 1.0, 0.0],
+    tex_coords: [0.0, 0.0],
+  }, // 2
+  Vertex {
+    position: [1.0, 1.0, 0.0],
+    tex_coords: [1.0, 0.0],
+  }, // 3
 ];
 
-const SCREEN_INDICES: &[u16] = &[
-  0, 1, 2, 2, 1, 3,
-];
+const SCREEN_INDICES: &[u16] = &[0, 1, 2, 2, 1, 3];
 
 pub struct Screen {
   pub diffuse_texture: Texture,
@@ -61,45 +74,35 @@ impl Screen {
       &viewport.config,
       "screen_diffuse_texture",
       Some(viewport.config.format),
-      Some(
-        wgpu::TextureUsages::RENDER_ATTACHMENT |
-        wgpu::TextureUsages::TEXTURE_BINDING
-      ),
+      Some(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING),
     );
     diffuse_texture.set_bind_group(device, bind_group_layout);
 
-    let depth_texture = texture::Texture::create_depth_texture(device, &viewport.config, "screen_depth_texture");
+    let depth_texture =
+      texture::Texture::create_depth_texture(device, &viewport.config, "screen_depth_texture");
 
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
       label: None,
       source: wgpu::ShaderSource::Wgsl(include_str!("../screen.wgsl").into()),
     });
 
-    let vertex_buffer = device.create_buffer_init(
-      &wgpu::util::BufferInitDescriptor {
-        label: Some("screen_vertex_buffer"),
-        contents: bytemuck::cast_slice(SCREEN_VERTICES),
-        usage: wgpu::BufferUsages::VERTEX,
-      }
-    );
+    let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+      label: Some("screen_vertex_buffer"),
+      contents: bytemuck::cast_slice(SCREEN_VERTICES),
+      usage: wgpu::BufferUsages::VERTEX,
+    });
 
-    let index_buffer = device.create_buffer_init(
-      &wgpu::util::BufferInitDescriptor {
-        label: Some("screen_index_buffer"),
-        contents: bytemuck::cast_slice(SCREEN_INDICES),
-        usage: wgpu::BufferUsages::INDEX,
-      }
-    );
+    let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+      label: Some("screen_index_buffer"),
+      contents: bytemuck::cast_slice(SCREEN_INDICES),
+      usage: wgpu::BufferUsages::INDEX,
+    });
 
-    let pipeline_layout = device.create_pipeline_layout(
-      &wgpu::PipelineLayoutDescriptor {
-        label: Some("screen_render_pipeline_layout"),
-        bind_group_layouts: &[
-          bind_group_layout,
-        ],
-        push_constant_ranges: &[],
-      }
-    );
+    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+      label: Some("screen_render_pipeline_layout"),
+      bind_group_layouts: &[bind_group_layout],
+      push_constant_ranges: &[],
+    });
 
     let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
       label: Some("screen_render_pipeline"),
@@ -146,34 +149,26 @@ impl Screen {
     }
   }
 
-  pub fn draw(
-    &self,
-    encoder: &mut wgpu::CommandEncoder,
-    target: &wgpu::TextureView,
-  ) {
-    let mut render_pass = encoder.begin_render_pass(
-      &wgpu::RenderPassDescriptor {
-        label: Some("screen_render_pass"),
-        color_attachments: &[
-          Some(wgpu::RenderPassColorAttachment {
-            view: target,
-            resolve_target: None,
-            ops: wgpu::Operations {
-              load: wgpu::LoadOp::Clear(wgpu::Color {
-                r: 0.0,
-                g: 0.0,
-                b: 0.0,
-                a: 1.0,
-              }),
-              store: wgpu::StoreOp::Store,
-            }
-          })
-        ],
-        depth_stencil_attachment: None,
-        timestamp_writes: None,
-        occlusion_query_set: None,
-      }
-    );
+  pub fn draw(&self, encoder: &mut wgpu::CommandEncoder, target: &wgpu::TextureView) {
+    let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+      label: Some("screen_render_pass"),
+      color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+        view: target,
+        resolve_target: None,
+        ops: wgpu::Operations {
+          load: wgpu::LoadOp::Clear(wgpu::Color {
+            r: 0.0,
+            g: 0.0,
+            b: 0.0,
+            a: 1.0,
+          }),
+          store: wgpu::StoreOp::Store,
+        },
+      })],
+      depth_stencil_attachment: None,
+      timestamp_writes: None,
+      occlusion_query_set: None,
+    });
 
     render_pass.set_pipeline(&self.pipeline);
     if let Some(screen_diffuse) = &self.diffuse_texture.bind_group {
@@ -195,17 +190,13 @@ impl Screen {
       &viewport.config,
       "screen_diffuse_texture",
       Some(viewport.config.format),
-      Some(
-        wgpu::TextureUsages::RENDER_ATTACHMENT |
-        wgpu::TextureUsages::TEXTURE_BINDING
-      ),
+      Some(wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::TEXTURE_BINDING),
     );
-    self.diffuse_texture.set_bind_group(device, bind_group_layout);
+    self
+      .diffuse_texture
+      .set_bind_group(device, bind_group_layout);
 
-    self.depth_texture = texture::Texture::create_depth_texture(
-      device,
-      &viewport.config,
-      "screen_depth_texture",
-    );
+    self.depth_texture =
+      texture::Texture::create_depth_texture(device, &viewport.config, "screen_depth_texture");
   }
 }

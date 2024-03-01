@@ -15,18 +15,15 @@ pub async fn run_server(server_endpoint: Endpoint) {
   log::info!("Connection accepted: addr={}", connection.remote_address());
 }
 
-pub async fn run_client(server_addr: SocketAddr, server_cert: Vec<u8>){
+pub async fn run_client(server_addr: SocketAddr, server_cert: Vec<u8>) {
   let endpoint = make_client_endpoint("0.0.0.0:0".parse().unwrap(), &[&server_cert]).unwrap();
-  let connection = match endpoint
-    .connect(server_addr, "localhost")
-    .unwrap()
-    .await {
-        Ok(connection) => connection,
-        Err(_) => {
-          log::error!("Failed to connect to server");
-          return;
-        },
-    };
+  let connection = match endpoint.connect(server_addr, "localhost").unwrap().await {
+    Ok(connection) => connection,
+    Err(_) => {
+      log::error!("Failed to connect to server");
+      return;
+    }
+  };
   log::info!("Connected: addr={}", connection.remote_address());
 }
 

@@ -1,7 +1,10 @@
 //! ## Client
 //!
 //! Defines and implements the client application.
-use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}};
+use unnamed_engine::{
+  core::engine::*,
+  event::{self, event::KeyCode},
+};
 
 /// ## Client
 ///
@@ -13,40 +16,33 @@ pub struct Client {
 impl Client {
   pub fn new(title: String) -> Self {
     Client {
-      engine: Engine::new(title)
+      engine: Engine::new(title),
     }
   }
 
   pub fn start(&mut self) {
     self.engine.start(
-      |engine| {
-      },
-      |engine| {
-
-      },
-      |engine| {
-
-      },
+      |engine| {},
+      |engine| {},
+      |engine| {},
       |engine, event| {
         // Handle events
         match event {
           // Keyboard event
-          event::event::Event::KeyboardInput {
-            key,
-            is_pressed,
-          } => {
+          event::event::Event::KeyboardInput { key, is_pressed } => {
             if is_pressed {
               match key {
                 // Engine should stop
                 KeyCode::Escape => {
                   engine.stop();
                 }
-                _ => {},
+                _ => {}
               }
             }
-          },
+          }
           _ => {}
         }
-      });
+      },
+    );
   }
 }

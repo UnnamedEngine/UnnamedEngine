@@ -21,9 +21,9 @@ impl ViewportDesc {
   pub fn new(window: Arc<Window>, background: wgpu::Color, instance: &wgpu::Instance) -> Self {
     let surface = instance.create_surface(window.clone()).unwrap();
     Self {
-        window,
-        background,
-        surface,
+      window,
+      background,
+      surface,
     }
   }
 
@@ -31,9 +31,11 @@ impl ViewportDesc {
     let size = self.window.inner_size();
 
     let caps = self.surface.get_capabilities(adapter);
-    let format = caps.formats.iter()
+    let format = caps
+      .formats
+      .iter()
       .copied()
-      .find(|f| { f.is_srgb() })
+      .find(|f| f.is_srgb())
       .unwrap_or(caps.formats[0]);
 
     let config = wgpu::SurfaceConfiguration {
@@ -52,7 +54,7 @@ impl ViewportDesc {
     Viewport {
       desc: self,
       config,
-      format
+      format,
     }
   }
 }
@@ -65,7 +67,8 @@ impl Viewport {
   }
 
   pub fn get_current_texture(&mut self) -> wgpu::SurfaceTexture {
-    self.desc
+    self
+      .desc
       .surface
       .get_current_texture()
       .expect("Failed to acquire next swap chain texture")
@@ -75,4 +78,3 @@ impl Viewport {
     self.desc.window.set_title(title);
   }
 }
-

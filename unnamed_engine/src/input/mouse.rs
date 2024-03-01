@@ -16,9 +16,7 @@ pub struct Mouse {
 impl Mouse {
   pub fn new() -> Self {
     let buttons = HashMap::new();
-    Self {
-      buttons,
-    }
+    Self { buttons }
   }
 
   /// Set a button an its state.
@@ -34,13 +32,10 @@ impl Mouse {
   /// Process the passed events.
   pub fn process_events(&mut self, event: Event) {
     match event {
-      Event::MouseInput {
-        button,
-        is_pressed,
-      } => {
+      Event::MouseInput { button, is_pressed } => {
         self.set_button(button, is_pressed);
-      },
-      _ => {},
+      }
+      _ => {}
     }
   }
 }

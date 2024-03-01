@@ -3,10 +3,10 @@
 //! Define the camera that UnnamedEngine uses.
 use std::{f32::consts::FRAC_2_PI, time::Duration};
 
+use crate::event::event::Event;
 use cgmath::{perspective, InnerSpace, Matrix4, Point3, Rad, Vector3};
 use wgpu::{util::DeviceExt, BindGroup, BindGroupLayout, Buffer, Device};
 use winit::keyboard::KeyCode;
-use crate::event::event::Event;
 
 #[rustfmt::skip]
 pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
@@ -54,13 +54,7 @@ pub struct Projection {
 }
 
 impl Projection {
-  pub fn new<F: Into<Rad<f32>>>(
-    width: u32,
-    height: u32,
-    fovy: F,
-    znear: f32,
-    zfar: f32,
-  ) -> Self {
+  pub fn new<F: Into<Rad<f32>>>(width: u32, height: u32, fovy: F, znear: f32, zfar: f32) -> Self {
     Self {
       aspect: width as f32 / height as f32,
       fovy: fovy.into(),
@@ -85,11 +79,7 @@ pub struct Camera {
 }
 
 impl Camera {
-  pub fn new<
-    V: Into<Point3<f32>>,
-    Y: Into<Rad<f32>>,
-    P: Into<Rad<f32>>,
-  >(
+  pub fn new<V: Into<Point3<f32>>, Y: Into<Rad<f32>>, P: Into<Rad<f32>>>(
     position: V,
     yaw: Y,
     pitch: P,
@@ -107,11 +97,7 @@ impl Camera {
 
     Matrix4::look_to_rh(
       self.position,
-      Vector3::new(
-        cos_pitch * cos_yaw,
-        sin_pitch,
-        cos_pitch * sin_yaw
-      ).normalize(),
+      Vector3::new(cos_pitch * cos_yaw, sin_pitch, cos_pitch * sin_yaw).normalize(),
       Vector3::unit_y(),
     )
   }
@@ -140,18 +126,8 @@ pub struct CameraController {
 impl CameraController {
   /// Creates a new camera controller and initializes a camera with the passed
   /// descriptor
-  pub fn new(
-    device: &Device,
-    speed: f32,
-    sensitivity: f32,
-    width: u32,
-    height: u32,
-  ) -> Self {
-    let camera = Camera::new(
-      (0.0, 2.0, 5.0),
-      cgmath::Deg(-90.0),
-      cgmath::Deg(-45.0)
-    );
+  pub fn new(device: &Device, speed: f32, sensitivity: f32, width: u32, height: u32) -> Self {
+    let camera = Camera::new((0.0, 2.0, 5.0), cgmath::Deg(-90.0), cgmath::Deg(-45.0));
 
     let projection = Projection::new(width, height, cgmath::Deg(45.0), 0.05, 1000.0);
 
@@ -162,34 +138,29 @@ impl CameraController {
       label: Some("Camera Buffer"),
       contents: bytemuck::cast_slice(&[uniform]),
       usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-      }
-    );
+    });
 
     let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
       label: Some("camera_bind_group_layout"),
-      entries: &[
-        wgpu::BindGroupLayoutEntry {
-          binding: 0,
-          visibility: wgpu::ShaderStages::VERTEX,
-          ty: wgpu::BindingType::Buffer {
-            ty: wgpu::BufferBindingType::Uniform,
-            has_dynamic_offset: false,
-            min_binding_size: None
-          },
-          count: None,
+      entries: &[wgpu::BindGroupLayoutEntry {
+        binding: 0,
+        visibility: wgpu::ShaderStages::VERTEX,
+        ty: wgpu::BindingType::Buffer {
+          ty: wgpu::BufferBindingType::Uniform,
+          has_dynamic_offset: false,
+          min_binding_size: None,
         },
-      ],
+        count: None,
+      }],
     });
 
     let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
       label: Some("camera_bind_group"),
       layout: &bind_group_layout,
-      entries: &[
-        wgpu::BindGroupEntry {
-          binding: 0,
-          resource: buffer.as_entire_binding(),
-        }
-      ]
+      entries: &[wgpu::BindGroupEntry {
+        binding: 0,
+        resource: buffer.as_entire_binding(),
+      }],
     });
 
     Self {
@@ -217,54 +188,46 @@ impl CameraController {
   /// otherwise returns false
   pub fn process_events(&mut self, event: Event) -> bool {
     match event {
-      Event::KeyboardInput {
-        key,
-        is_pressed,
-      } => {
+      Event::KeyboardInput { key, is_pressed } => {
         let amount = if is_pressed { 1.0 } else { 0.0 };
         match key {
           KeyCode::KeyW | KeyCode::ArrowUp => {
             self.amount_forward = amount;
             true
-          },
+          }
           KeyCode::KeyS | KeyCode::ArrowDown => {
             self.amount_backward = amount;
             true
-          },
+          }
           KeyCode::KeyA | KeyCode::ArrowLeft => {
             self.amount_left = amount;
             true
-          },
+          }
           KeyCode::KeyD | KeyCode::ArrowRight => {
             self.amount_right = amount;
             true
-          },
+          }
           KeyCode::Space => {
             self.amount_up = amount;
             true
-          },
+          }
           KeyCode::ShiftLeft => {
             self.amount_down = amount;
             true
-          },
-          _ => false
+          }
+          _ => false,
         }
-      },
-      Event::MouseMotion {
-        x,
-        y,
-      } => {
+      }
+      Event::MouseMotion { x, y } => {
         self.rotate_horizontal = x;
         self.rotate_vertical = y;
         true
-      },
-      Event::MouseScroll {
-        delta,
-      } => {
+      }
+      Event::MouseScroll { delta } => {
         self.scroll = delta.1;
         true
-      },
-      _ => false
+      }
+      _ => false,
     }
   }
 
@@ -275,14 +238,14 @@ impl CameraController {
     let (yaw_sin, yaw_cos) = self.camera.yaw.0.sin_cos();
     let forward = Vector3::new(yaw_cos, 0.0, yaw_sin).normalize();
     let right = Vector3::new(-yaw_sin, 0.0, yaw_cos).normalize();
-    self.camera.position += forward * (self.amount_forward - self.amount_backward) * self.speed * dt;
+    self.camera.position +=
+      forward * (self.amount_forward - self.amount_backward) * self.speed * dt;
     self.camera.position += right * (self.amount_right - self.amount_left) * self.speed * dt;
 
     // Move in/out (aka. "zoom")
     // Note: this isn't an actual zoom. The camera's position changes when zooming.
     let (pitch_sin, pitch_cos) = self.camera.pitch.0.sin_cos();
-    let scrollward =
-      Vector3::new(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
+    let scrollward = Vector3::new(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
     self.camera.position += scrollward * self.scroll * self.speed * self.sensitivity * dt;
     self.scroll = 0.0;
 
@@ -305,11 +268,12 @@ impl CameraController {
       self.camera.pitch = Rad(SAFE_FRAC_PI_2);
     }
 
-    self.uniform.update_view_proj(&self.camera, &self.projection);
+    self
+      .uniform
+      .update_view_proj(&self.camera, &self.projection);
   }
 
   pub fn resize(&mut self, width: u32, height: u32) {
     self.projection.resize(width, height);
   }
-
 }

@@ -16,16 +16,15 @@ pub struct TransformRaw {
 impl Transform {
   pub fn to_raw(&self) -> TransformRaw {
     TransformRaw {
-      model: (
-        cgmath::Matrix4::from_translation(self.position) *
-        cgmath::Matrix4::from(self.rotation) *
-        cgmath::Matrix4::from_diagonal(
-          cgmath::Vector4::new(
-            self.scale.x,
-            self.scale.y,
-            self.scale.z,
-            1.0))
-      ).into(),
+      model: (cgmath::Matrix4::from_translation(self.position)
+        * cgmath::Matrix4::from(self.rotation)
+        * cgmath::Matrix4::from_diagonal(cgmath::Vector4::new(
+          self.scale.x,
+          self.scale.y,
+          self.scale.z,
+          1.0,
+        )))
+      .into(),
     }
   }
 }
@@ -44,7 +43,7 @@ impl TransformRaw {
         wgpu::VertexAttribute {
           offset: 0,
           shader_location: 5,
-          format: wgpu:: VertexFormat::Float32x4,
+          format: wgpu::VertexFormat::Float32x4,
         },
         wgpu::VertexAttribute {
           offset: mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,

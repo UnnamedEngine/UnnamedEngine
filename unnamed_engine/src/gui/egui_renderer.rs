@@ -12,7 +12,7 @@ use winit::window::Window;
 pub struct EguiRenderer {
   pub context: Context,
   state: State,
-  renderer: Renderer
+  renderer: Renderer,
 }
 
 impl EguiRenderer {
@@ -42,7 +42,7 @@ impl EguiRenderer {
       device,
       output_color_format,
       output_depth_format,
-      msaa_samples
+      msaa_samples,
     );
 
     Self {
@@ -71,7 +71,8 @@ impl EguiRenderer {
       run_ui(&self.context);
     });
 
-    self.state
+    self
+      .state
       .handle_platform_output(window, full_output.platform_output);
 
     let tris = self
@@ -79,11 +80,13 @@ impl EguiRenderer {
       .tessellate(full_output.shapes, full_output.pixels_per_point);
 
     for (id, image_delta) in &full_output.textures_delta.set {
-      self.renderer
+      self
+        .renderer
         .update_texture(device, queue, *id, image_delta);
     }
 
-    self.renderer
+    self
+      .renderer
       .update_buffers(device, queue, encoder, &tris, &screen_descriptor);
 
     let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -108,6 +111,5 @@ impl EguiRenderer {
     for x in &full_output.textures_delta.free {
       self.renderer.free_texture(x);
     }
-
   }
 }

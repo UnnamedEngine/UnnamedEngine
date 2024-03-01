@@ -7,7 +7,13 @@ use wgpu::util::DeviceExt;
 
 use crate::gui::{egui_renderer::EguiRenderer, gui::gui};
 
-use super::{camera::CameraController, screen::Screen, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport};
+use super::{
+  camera::CameraController,
+  screen::Screen,
+  texture::{self, Texture},
+  transform::{Transform, TransformRaw},
+  viewport::Viewport,
+};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
@@ -31,30 +37,55 @@ impl Vertex {
           offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
           shader_location: 1,
           format: wgpu::VertexFormat::Float32x2,
-        }
-      ]
+        },
+      ],
     }
   }
 }
 
 const VERTICES: &[Vertex] = &[
-  Vertex { position: [-0.5, -0.5, -0.5], tex_coords: [0.0, 1.0] },
-  Vertex { position: [ 0.5, -0.5, -0.5], tex_coords: [1.0, 1.0] },
-  Vertex { position: [-0.5,  0.5, -0.5], tex_coords: [0.0, 0.0] },
-  Vertex { position: [ 0.5,  0.5, -0.5], tex_coords: [1.0, 0.0] },
-  Vertex { position: [-0.5, -0.5,  0.5], tex_coords: [0.0, 1.0] },
-  Vertex { position: [ 0.5, -0.5,  0.5], tex_coords: [1.0, 1.0] },
-  Vertex { position: [-0.5,  0.5,  0.5], tex_coords: [0.0, 0.0] },
-  Vertex { position: [ 0.5,  0.5,  0.5], tex_coords: [1.0, 0.0] },
+  Vertex {
+    position: [-0.5, -0.5, -0.5],
+    tex_coords: [0.0, 1.0],
+  },
+  Vertex {
+    position: [0.5, -0.5, -0.5],
+    tex_coords: [1.0, 1.0],
+  },
+  Vertex {
+    position: [-0.5, 0.5, -0.5],
+    tex_coords: [0.0, 0.0],
+  },
+  Vertex {
+    position: [0.5, 0.5, -0.5],
+    tex_coords: [1.0, 0.0],
+  },
+  Vertex {
+    position: [-0.5, -0.5, 0.5],
+    tex_coords: [0.0, 1.0],
+  },
+  Vertex {
+    position: [0.5, -0.5, 0.5],
+    tex_coords: [1.0, 1.0],
+  },
+  Vertex {
+    position: [-0.5, 0.5, 0.5],
+    tex_coords: [0.0, 0.0],
+  },
+  Vertex {
+    position: [0.5, 0.5, 0.5],
+    tex_coords: [1.0, 0.0],
+  },
 ];
 
-const INDICES: &[u16] = &[
-  0, 1, 2, 2, 1, 3,
-];
+const INDICES: &[u16] = &[0, 1, 2, 2, 1, 3];
 
 const NUM_INSTANCES_PER_ROW: u32 = 10;
-const INSTANCE_DISPLACEMENT: cgmath::Vector3<f32> = cgmath::Vector3::new(NUM_INSTANCES_PER_ROW as f32 * 0.5, 0.0, NUM_INSTANCES_PER_ROW as f32 * 0.5);
-
+const INSTANCE_DISPLACEMENT: cgmath::Vector3<f32> = cgmath::Vector3::new(
+  NUM_INSTANCES_PER_ROW as f32 * 0.5,
+  0.0,
+  NUM_INSTANCES_PER_ROW as f32 * 0.5,
+);
 
 pub struct MiddlewareRenderer {
   texture_bind_group_layout: wgpu::BindGroupLayout,
@@ -77,34 +108,36 @@ impl MiddlewareRenderer {
     camera_controller: &CameraController,
     viewport: &Viewport,
   ) -> Self {
-    let texture_bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-      label: Some("texture_bind_group_layout"),
-      entries: &[
-        wgpu::BindGroupLayoutEntry {
-          binding: 0,
-          visibility: wgpu::ShaderStages::FRAGMENT,
-          ty: wgpu::BindingType::Texture {
-            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-            view_dimension: wgpu::TextureViewDimension::D2,
-            multisampled: false,
+    let texture_bind_group_layout =
+      device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+        label: Some("texture_bind_group_layout"),
+        entries: &[
+          wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Texture {
+              sample_type: wgpu::TextureSampleType::Float { filterable: true },
+              view_dimension: wgpu::TextureViewDimension::D2,
+              multisampled: false,
+            },
+            count: None,
           },
-          count: None,
-        },
-        wgpu::BindGroupLayoutEntry {
-          binding: 1,
-          visibility: wgpu::ShaderStages::FRAGMENT,
-          // This should match the filterable filed of the corresponding Texture
-          // entry above
-          ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
-          count: None,
-        },
-      ],
-    });
+          wgpu::BindGroupLayoutEntry {
+            binding: 1,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            // This should match the filterable filed of the corresponding Texture
+            // entry above
+            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+            count: None,
+          },
+        ],
+      });
 
     let screen = Screen::new(device, viewport, &texture_bind_group_layout);
 
     let test_bytes = include_bytes!("../../res/dirt.png");
-    let mut test_texture = texture::Texture::from_bytes(device, queue, test_bytes, "dirt.png").unwrap();
+    let mut test_texture =
+      texture::Texture::from_bytes(device, queue, test_bytes, "dirt.png").unwrap();
     test_texture.set_bind_group(device, &texture_bind_group_layout);
 
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -176,32 +209,42 @@ impl MiddlewareRenderer {
 
     let num_indices = INDICES.len() as u32;
 
-    let transforms = (0..NUM_INSTANCES_PER_ROW).flat_map(|z| {
-      (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-        let position = cgmath::Vector3 {x: x as f32, y: 0.0, z: z as f32} - INSTANCE_DISPLACEMENT;
+    let transforms = (0..NUM_INSTANCES_PER_ROW)
+      .flat_map(|z| {
+        (0..NUM_INSTANCES_PER_ROW).map(move |x| {
+          let position = cgmath::Vector3 {
+            x: x as f32,
+            y: 0.0,
+            z: z as f32,
+          } - INSTANCE_DISPLACEMENT;
 
-        let rotation = if position.is_zero() {
-          cgmath::Quaternion::from_axis_angle(cgmath::Vector3::unit_z(), cgmath::Deg(0.0))
-        } else {
-          cgmath::Quaternion::from_axis_angle(position.normalize(), cgmath::Deg(45.0))
-        };
+          let rotation = if position.is_zero() {
+            cgmath::Quaternion::from_axis_angle(cgmath::Vector3::unit_z(), cgmath::Deg(0.0))
+          } else {
+            cgmath::Quaternion::from_axis_angle(position.normalize(), cgmath::Deg(45.0))
+          };
 
-        let scale  = cgmath::Vector3{x: 1.0, y: 1.0, z: 1.0};
+          let scale = cgmath::Vector3 {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0,
+          };
 
-        Transform {
-          position, rotation, scale
-        }
+          Transform {
+            position,
+            rotation,
+            scale,
+          }
+        })
       })
-    }).collect::<Vec<_>>();
+      .collect::<Vec<_>>();
 
     let instance_data = transforms.iter().map(Transform::to_raw).collect::<Vec<_>>();
-    let instance_buffer = device.create_buffer_init(
-      &wgpu::util::BufferInitDescriptor {
-        label: Some("instance_buffer"),
-        contents: bytemuck::cast_slice(&instance_data),
-        usage: wgpu::BufferUsages::VERTEX,
-      }
-    );
+    let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+      label: Some("instance_buffer"),
+      contents: bytemuck::cast_slice(&instance_data),
+      usage: wgpu::BufferUsages::VERTEX,
+    });
 
     Self {
       texture_bind_group_layout,
@@ -228,7 +271,9 @@ impl MiddlewareRenderer {
     let output = viewport.get_current_texture();
 
     let renderer_view = &self.screen.diffuse_texture.view;
-    let window_view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+    let window_view = output
+      .texture
+      .create_view(&wgpu::TextureViewDescriptor::default());
 
     let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
       label: Some("render_encoder"),
@@ -251,7 +296,7 @@ impl MiddlewareRenderer {
               }),
               store: wgpu::StoreOp::Store,
             },
-          })
+          }),
         ],
         depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
           view: &self.screen.depth_texture.view,
@@ -278,10 +323,7 @@ impl MiddlewareRenderer {
       render_pass.draw_indexed(0..self.num_indices, 0, 0..self.transforms.len() as _);
     }
 
-    self.screen.draw(
-      &mut encoder,
-      &window_view,
-    );
+    self.screen.draw(&mut encoder, &window_view);
 
     let screen_descriptor = ScreenDescriptor {
       size_in_pixels: [viewport.config.width, viewport.config.height],
@@ -306,7 +348,9 @@ impl MiddlewareRenderer {
   }
 
   pub fn resize(&mut self, device: &wgpu::Device, viewport: &Viewport) {
-    self.screen.resize(device, viewport, &self.texture_bind_group_layout);
+    self
+      .screen
+      .resize(device, viewport, &self.texture_bind_group_layout);
     //self.depth_texture = texture::Texture::create_depth_texture(device, &viewport.config, "depth_texture");
   }
 }

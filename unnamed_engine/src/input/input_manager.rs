@@ -14,10 +14,7 @@ impl InputManager {
   pub fn new() -> Self {
     let keyboard = Keyboard::new();
     let mouse = Mouse::new();
-    Self {
-      keyboard,
-      mouse,
-    }
+    Self { keyboard, mouse }
   }
 
   /// Handles the events and replicate then to other areas.

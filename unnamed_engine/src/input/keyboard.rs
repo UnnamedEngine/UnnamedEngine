@@ -15,9 +15,7 @@ pub struct Keyboard {
 impl Keyboard {
   pub fn new() -> Self {
     let keys = HashMap::new();
-    Self {
-      keys
-    }
+    Self { keys }
   }
 
   /// Set a key and its state.
@@ -31,26 +29,21 @@ impl Keyboard {
   }
 
   /// Preparation before events get passed.
-  pub fn prepare(&mut self) {
-
-  }
+  pub fn prepare(&mut self) {}
 
   /// Process the passed events
   pub fn process_events(&mut self, event: Event) {
     match event {
-        Event::KeyboardInput {
-          key,
-          is_pressed,
-        } => {
-          self.set_key(key, is_pressed);
-        },
-        _ => {},
+      Event::KeyboardInput { key, is_pressed } => {
+        self.set_key(key, is_pressed);
+      }
+      _ => {}
     }
   }
 }
 
 impl Default for Keyboard {
-    fn default() -> Self {
-      Self::new()
-    }
+  fn default() -> Self {
+    Self::new()
+  }
 }

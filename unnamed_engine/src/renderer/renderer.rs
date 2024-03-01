@@ -9,7 +9,11 @@ use winit::window::Window;
 
 use crate::{core::module::Module, event::event::Event, gui::egui_renderer::EguiRenderer};
 
-use super::{camera::CameraController, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}};
+use super::{
+  camera::CameraController,
+  middleware_renderer::MiddlewareRenderer,
+  viewport::{Viewport, ViewportDesc},
+};
 
 /// ## Renderer
 ///
@@ -21,17 +25,14 @@ pub struct Renderer {
   queue: wgpu::Queue,
   pub camera_controller: CameraController,
   middleware: MiddlewareRenderer,
-  pub egui: EguiRenderer
+  pub egui: EguiRenderer,
 }
 
 impl Module for Renderer {
   fn process_events(&mut self, event: Event) -> Result<(), Box<dyn Error>> {
     self.camera_controller.process_events(event);
     match event {
-      Event::Resize {
-        width,
-        height,
-      } => {
+      Event::Resize { width, height } => {
         if width > 0 && height > 0 {
           self.viewport.resize(&self.device, width, height);
           self.camera_controller.resize(width, height);
@@ -40,11 +41,11 @@ impl Module for Renderer {
           // Request a redraw just in case
           self.viewport.desc.window.request_redraw();
         }
-      },
+      }
       Event::Redraw => {
         self.viewport.desc.window.request_redraw();
-      },
-      _ => {},
+      }
+      _ => {}
     }
 
     Ok(())
@@ -52,12 +53,16 @@ impl Module for Renderer {
 
   fn update(&mut self, dt: Duration) -> Result<(), Box<dyn Error>> {
     self.camera_controller.update(dt);
-    self.queue.write_buffer(&self.camera_controller.buffer, 0, bytemuck::cast_slice(&[self.camera_controller.uniform]));
+    self.queue.write_buffer(
+      &self.camera_controller.buffer,
+      0,
+      bytemuck::cast_slice(&[self.camera_controller.uniform]),
+    );
 
     Ok(())
   }
 
-  fn render(&mut self) -> Result<(), Box<dyn Error>>{
+  fn render(&mut self) -> Result<(), Box<dyn Error>> {
     let _ = self.middleware.render(
       &mut self.viewport,
       &self.device,
@@ -121,13 +126,7 @@ impl Renderer {
 
     let viewport = viewport.build(&adapter, &device);
 
-    let egui = EguiRenderer::new(
-      &device,
-      viewport.format,
-      None,
-      1,
-      &viewport.desc.window,
-    );
+    let egui = EguiRenderer::new(&device, viewport.format, None, 1, &viewport.desc.window);
 
     let camera_controller = CameraController::new(
       &device,
@@ -137,12 +136,7 @@ impl Renderer {
       viewport.config.height,
     );
 
-    let middleware = MiddlewareRenderer::new(
-      &device,
-      &queue,
-      &camera_controller,
-      &viewport,
-    );
+    let middleware = MiddlewareRenderer::new(&device, &queue, &camera_controller, &viewport);
 
     Self {
       viewport,

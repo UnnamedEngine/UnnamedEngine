@@ -5,7 +5,10 @@ use std::{error::Error, sync::Arc};
 
 use winit::{event::WindowEvent, window::Window};
 
-use crate::{event::event::Event, renderer::{renderer::Renderer, viewport::Viewport}};
+use crate::{
+  event::event::Event,
+  renderer::{renderer::Renderer, viewport::Viewport},
+};
 
 use super::module::Module;
 
@@ -21,9 +24,7 @@ impl State {
 
     modules.push(renderer_module);
 
-    Self {
-      modules,
-    }
+    Self { modules }
   }
 
   pub fn register_module(&mut self, module: Box<dyn Module>) {

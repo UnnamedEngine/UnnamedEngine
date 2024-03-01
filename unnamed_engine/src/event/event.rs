@@ -1,8 +1,8 @@
 //! ## Event
 //!
 //! Defines the events that will be used internally and passed the applications.
-pub use winit::keyboard::KeyCode;
 pub use winit::event::MouseButton;
+pub use winit::keyboard::KeyCode;
 
 /// All the possible events for UnnamedEngine are registered here.
 #[derive(Debug, Clone, Copy)]
