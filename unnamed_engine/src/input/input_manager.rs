@@ -22,7 +22,13 @@ impl InputManager {
 
   /// Handles the events and replicate then to other areas.
   pub fn process_events(&mut self, event: Event) {
-    self.keyboard.process_events(event.clone());
-    self.mouse.process_events(event.clone());
+    self.keyboard.process_events(event);
+    self.mouse.process_events(event);
+  }
+}
+
+impl Default for InputManager {
+  fn default() -> Self {
+    Self::new()
   }
 }

@@ -30,5 +30,6 @@ pub enum Event {
   },
   MouseScroll {
     delta: (f32, f32),
-  }
+  },
+  Redraw,
 }

@@ -40,6 +40,12 @@ impl CameraUniform {
   }
 }
 
+impl Default for CameraUniform {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 pub struct Projection {
   aspect: f32,
   fovy: Rad<f32>,

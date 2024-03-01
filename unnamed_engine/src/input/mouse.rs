@@ -44,3 +44,9 @@ impl Mouse {
     }
   }
 }
+
+impl Default for Mouse {
+  fn default() -> Self {
+    Self::new()
+  }
+}

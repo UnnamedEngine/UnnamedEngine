@@ -289,13 +289,13 @@ impl MiddlewareRenderer {
     };
 
     egui.draw(
-      &device,
-      &queue,
+      device,
+      queue,
       &mut encoder,
       &viewport.desc.window,
       &window_view,
       screen_descriptor,
-      |ui| gui(ui),
+      gui,
     );
 
     // Submit will accept anything that implements IntoIter

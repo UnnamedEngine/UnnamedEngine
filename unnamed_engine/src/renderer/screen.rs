@@ -30,14 +30,14 @@ impl Vertex {
   }
 }
 
-pub const SCREEN_VERTICES: &[Vertex] = &[
+const SCREEN_VERTICES: &[Vertex] = &[
   Vertex { position: [-1.0, -1.0, 0.0], tex_coords: [0.0, 1.0] }, // 0
   Vertex { position: [ 1.0, -1.0, 0.0], tex_coords: [1.0, 1.0] }, // 1
   Vertex { position: [-1.0,  1.0, 0.0], tex_coords: [0.0, 0.0] }, // 2
   Vertex { position: [ 1.0,  1.0, 0.0], tex_coords: [1.0, 0.0] }, // 3
 ];
 
-pub const SCREEN_INDICES: &[u16] = &[
+const SCREEN_INDICES: &[u16] = &[
   0, 1, 2, 2, 1, 3,
 ];
 

@@ -30,7 +30,7 @@ impl ViewportDesc {
   pub fn build(self, adapter: &wgpu::Adapter, device: &wgpu::Device) -> Viewport {
     let size = self.window.inner_size();
 
-    let caps = self.surface.get_capabilities(&adapter);
+    let caps = self.surface.get_capabilities(adapter);
     let format = caps.formats.iter()
       .copied()
       .find(|f| { f.is_srgb() })
@@ -58,9 +58,9 @@ impl ViewportDesc {
 }
 
 impl Viewport {
-  pub fn resize(&mut self, device: &wgpu::Device, size: winit::dpi::PhysicalSize<u32>) {
-    self.config.width = size.width;
-    self.config.height = size.height;
+  pub fn resize(&mut self, device: &wgpu::Device, width: u32, height: u32) {
+    self.config.width = width;
+    self.config.height = height;
     self.desc.surface.configure(device, &self.config);
   }
 

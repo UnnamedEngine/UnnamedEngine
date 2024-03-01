@@ -1,7 +1,7 @@
 //! ## Client
 //!
 //! Defines and implements the client application.
-use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}, log::info};
+use unnamed_engine::{core::engine::*, event::{self, event::KeyCode}};
 
 /// ## Client
 ///
@@ -20,7 +20,6 @@ impl Client {
   pub fn start(&mut self) {
     self.engine.start(
       |engine| {
-
       },
       |engine| {
 

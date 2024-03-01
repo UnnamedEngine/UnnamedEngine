@@ -2,12 +2,12 @@
 //!
 //! Defines and implements the renderer and the related structs.
 
-use std::{sync::Arc, time::Duration};
+use std::{error::Error, sync::Arc, time::Duration};
 
 use wgpu::InstanceFlags;
 use winit::window::Window;
 
-use crate::{event::event::Event, gui::egui_renderer::EguiRenderer};
+use crate::{core::module::Module, event::event::Event, gui::egui_renderer::EguiRenderer};
 
 use super::{camera::CameraController, middleware_renderer::MiddlewareRenderer, viewport::{Viewport, ViewportDesc}};
 
@@ -22,6 +22,60 @@ pub struct Renderer {
   pub camera_controller: CameraController,
   middleware: MiddlewareRenderer,
   pub egui: EguiRenderer
+}
+
+impl Module for Renderer {
+  fn process_events(&mut self, event: Event) -> Result<(), Box<dyn Error>> {
+    self.camera_controller.process_events(event);
+    match event {
+      Event::Resize {
+        width,
+        height,
+      } => {
+        if width > 0 && height > 0 {
+          self.viewport.resize(&self.device, width, height);
+          self.camera_controller.resize(width, height);
+          self.middleware.resize(&self.device, &self.viewport);
+
+          // Request a redraw just in case
+          self.viewport.desc.window.request_redraw();
+        }
+      },
+      Event::Redraw => {
+        self.viewport.desc.window.request_redraw();
+      },
+      _ => {},
+    }
+
+    Ok(())
+  }
+
+  fn update(&mut self, dt: Duration) -> Result<(), Box<dyn Error>> {
+    self.camera_controller.update(dt);
+    self.queue.write_buffer(&self.camera_controller.buffer, 0, bytemuck::cast_slice(&[self.camera_controller.uniform]));
+
+    Ok(())
+  }
+
+  fn render(&mut self) -> Result<(), Box<dyn Error>>{
+    let _ = self.middleware.render(
+      &mut self.viewport,
+      &self.device,
+      &self.queue,
+      &self.camera_controller,
+      &mut self.egui,
+    );
+
+    Ok(())
+  }
+
+  fn viewport(&mut self) -> Option<&mut Viewport> {
+    Some(&mut self.viewport)
+  }
+
+  fn process_window_events(&mut self, event: &winit::event::WindowEvent) {
+    self.egui.handle_input(&self.viewport.desc.window, event);
+  }
 }
 
 impl Renderer {
@@ -98,39 +152,5 @@ impl Renderer {
       middleware,
       egui,
     }
-  }
-
-  pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
-    if new_size.width > 0 && new_size.height > 0 {
-      self.viewport.resize(&self.device, new_size);
-      self.camera_controller.resize(new_size.width, new_size.height);
-      self.middleware.resize(&self.device, &self.viewport);
-
-      // Request a redraw just in case
-      self.viewport.desc.window.request_redraw();
-    }
-  }
-
-  pub fn process_events(&mut self, event: Event) -> bool {
-    self.camera_controller.process_events(event)
-  }
-
-  pub fn update(&mut self, dt: Duration) {
-    self.camera_controller.update(dt);
-    self.queue.write_buffer(&self.camera_controller.buffer, 0, bytemuck::cast_slice(&[self.camera_controller.uniform]));
-  }
-
-  pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
-    self.middleware.render(
-      &mut self.viewport,
-      &self.device,
-      &self.queue,
-      &self.camera_controller,
-      &mut self.egui,
-    )
-  }
-
-  pub fn request_redraw(&mut self) {
-    self.viewport.desc.window.request_redraw();
   }
 }

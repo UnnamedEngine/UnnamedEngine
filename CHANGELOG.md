@@ -1,3 +1,9 @@
+## 0.0.18d - 01/03/2024
+
+- Added `Module` trait to represent an engine module
+- `State` now contains a `Vec<Box<Module>>`
+- Transformed `Renderer` into a module
+
 ## 0.0.17d - 29/02/2024
 
 - Improved `Screen` to handle its own rendering with `draw()`
