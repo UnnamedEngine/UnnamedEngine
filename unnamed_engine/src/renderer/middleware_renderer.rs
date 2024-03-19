@@ -5,7 +5,7 @@ use cgmath::{InnerSpace, Rotation3, Zero};
 use egui_wgpu::ScreenDescriptor;
 use wgpu::util::DeviceExt;
 
-use crate::gui::{egui_renderer::EguiRenderer, gui::gui};
+use crate::{gui::{egui_renderer::EguiRenderer, gui::gui}, voxel::{Chunk, CHUNK_AREA, CHUNK_SIZE, CHUNK_VOLUME}};
 
 use super::{
   camera::CameraController,
@@ -80,13 +80,6 @@ const VERTICES: &[Vertex] = &[
 
 const INDICES: &[u16] = &[0, 1, 2, 2, 1, 3];
 
-const NUM_INSTANCES_PER_ROW: u32 = 10;
-const INSTANCE_DISPLACEMENT: cgmath::Vector3<f32> = cgmath::Vector3::new(
-  NUM_INSTANCES_PER_ROW as f32 * 0.5,
-  0.0,
-  NUM_INSTANCES_PER_ROW as f32 * 0.5,
-);
-
 pub struct MiddlewareRenderer {
   texture_bind_group_layout: wgpu::BindGroupLayout,
   shader: wgpu::ShaderModule,
@@ -135,7 +128,7 @@ impl MiddlewareRenderer {
 
     let screen = Screen::new(device, viewport, &texture_bind_group_layout);
 
-    let test_bytes = include_bytes!("../../res/dirt.png");
+    let test_bytes = include_bytes!("../../assets/textures/dirt.png");
     let mut test_texture =
       texture::Texture::from_bytes(device, queue, test_bytes, "dirt.png").unwrap();
     test_texture.set_bind_group(device, &texture_bind_group_layout);
@@ -209,35 +202,43 @@ impl MiddlewareRenderer {
 
     let num_indices = INDICES.len() as u32;
 
-    let transforms = (0..NUM_INSTANCES_PER_ROW)
-      .flat_map(|z| {
-        (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-          let position = cgmath::Vector3 {
-            x: x as f32,
-            y: 0.0,
-            z: z as f32,
-          } - INSTANCE_DISPLACEMENT;
+    let mut voxels = [0; CHUNK_VOLUME];
+    for x in 0..CHUNK_SIZE - 1 {
+      for z in 0..CHUNK_SIZE - 1 {
+        voxels[(x * CHUNK_AREA) + z] = 1;
+      }
+    }
 
-          let rotation = if position.is_zero() {
-            cgmath::Quaternion::from_axis_angle(cgmath::Vector3::unit_z(), cgmath::Deg(0.0))
-          } else {
-            cgmath::Quaternion::from_axis_angle(position.normalize(), cgmath::Deg(45.0))
-          };
+    let chunk = Chunk::new(Default::default(), voxels);
+    let transforms = chunk.iter().filter(|(position, voxel)| {
+      if *voxel == 1 {
+        true
+      } else {
+        false
+      }
+    })
+    .map(|(position, voxel)| {
+      let position = cgmath::Vector3 {
+        x: position.x as f32,
+        y: position.y as f32,
+        z: position.z as f32,
+      };
 
-          let scale = cgmath::Vector3 {
-            x: 1.0,
-            y: 1.0,
-            z: 1.0,
-          };
+      let rotation = cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0));
 
-          Transform {
-            position,
-            rotation,
-            scale,
-          }
-        })
-      })
-      .collect::<Vec<_>>();
+      let scale = cgmath::Vector3 {
+        x: 1.0,
+        y: 1.0,
+        z: 1.0,
+      };
+
+      Transform {
+        position,
+        rotation,
+        scale,
+      }
+    })
+    .collect::<Vec<_>>();
 
     let instance_data = transforms.iter().map(Transform::to_raw).collect::<Vec<_>>();
     let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {

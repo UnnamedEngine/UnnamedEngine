@@ -1,3 +1,9 @@
+## 0.0.19d -
+- Renamed `res` to `assets`
+- Created `assets/textures`
+- Moved `dirt.png` to `assets/textures`
+- Added `Chunk`, `ChunkIterator` and `ChunkVoxelPosition`
+
 ## 0.0.18d - 01/03/2024
 
 - Added `Module` trait to represent an engine module
