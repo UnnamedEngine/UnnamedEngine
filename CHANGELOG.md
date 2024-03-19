@@ -1,8 +1,10 @@
-## 0.0.19d -
+## 0.0.19d - 19/03/2024
 - Renamed `res` to `assets`
 - Created `assets/textures`
 - Moved `dirt.png` to `assets/textures`
 - Added `Chunk`, `ChunkIterator` and `ChunkVoxelPosition`
+- `Camera` now properly moves forward
+- Rendering cubes
 
 ## 0.0.18d - 01/03/2024
 

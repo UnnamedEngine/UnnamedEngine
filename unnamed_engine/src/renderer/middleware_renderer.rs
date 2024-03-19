@@ -19,7 +19,7 @@ use super::{
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 struct Vertex {
   position: [f32; 3],
-  tex_coords: [f32; 2],
+  color: [f32; 3],
 }
 
 impl Vertex {
@@ -36,7 +36,7 @@ impl Vertex {
         wgpu::VertexAttribute {
           offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
           shader_location: 1,
-          format: wgpu::VertexFormat::Float32x2,
+          format: wgpu::VertexFormat::Float32x3,
         },
       ],
     }
@@ -44,41 +44,48 @@ impl Vertex {
 }
 
 const VERTICES: &[Vertex] = &[
-  Vertex {
-    position: [-0.5, -0.5, -0.5],
-    tex_coords: [0.0, 1.0],
-  },
-  Vertex {
-    position: [0.5, -0.5, -0.5],
-    tex_coords: [1.0, 1.0],
-  },
-  Vertex {
-    position: [-0.5, 0.5, -0.5],
-    tex_coords: [0.0, 0.0],
-  },
-  Vertex {
-    position: [0.5, 0.5, -0.5],
-    tex_coords: [1.0, 0.0],
-  },
-  Vertex {
+  Vertex { // 0
     position: [-0.5, -0.5, 0.5],
-    tex_coords: [0.0, 1.0],
+    color: [1.0, 0.0, 0.0],
   },
-  Vertex {
+  Vertex { // 1
     position: [0.5, -0.5, 0.5],
-    tex_coords: [1.0, 1.0],
+    color: [0.0, 1.0, 0.0],
   },
-  Vertex {
+  Vertex { // 2
     position: [-0.5, 0.5, 0.5],
-    tex_coords: [0.0, 0.0],
+    color: [0.0, 0.0, 1.0],
   },
-  Vertex {
+  Vertex { // 3
     position: [0.5, 0.5, 0.5],
-    tex_coords: [1.0, 0.0],
+    color: [1.0, 1.0, 0.0],
+  },
+  Vertex { // 4
+    position: [-0.5, -0.5, -0.5],
+    color: [0.0, 1.0, 1.0],
+  },
+  Vertex { // 5
+    position: [0.5, -0.5, -0.5],
+    color: [1.0, 1.0, 0.0],
+  },
+  Vertex { // 6
+    position: [-0.5, 0.5, -0.5],
+    color: [1.0, 0.0, 0.0],
+  },
+  Vertex { // 7
+    position: [0.5, 0.5, -0.5],
+    color: [0.0, 0.0, 1.0],
   },
 ];
 
-const INDICES: &[u16] = &[0, 1, 2, 2, 1, 3];
+const INDICES: &[u16] = &[
+  0, 1, 2, 2, 1, 3,
+  5, 7, 4, 4, 7, 6,
+  4, 6, 0, 0, 6, 2,
+  1, 3, 5, 5, 3, 7,
+  2, 6, 3, 3, 6, 7,
+  4, 0, 5, 5, 0, 1,
+  ];
 
 pub struct MiddlewareRenderer {
   texture_bind_group_layout: wgpu::BindGroupLayout,
@@ -210,13 +217,7 @@ impl MiddlewareRenderer {
     }
 
     let chunk = Chunk::new(Default::default(), voxels);
-    let transforms = chunk.iter().filter(|(position, voxel)| {
-      if *voxel == 1 {
-        true
-      } else {
-        false
-      }
-    })
+    let transforms = chunk.iter()
     .map(|(position, voxel)| {
       let position = cgmath::Vector3 {
         x: position.x as f32,

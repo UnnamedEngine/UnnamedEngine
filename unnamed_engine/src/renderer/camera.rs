@@ -4,7 +4,7 @@
 use std::{f32::consts::FRAC_2_PI, time::Duration};
 
 use crate::event::event::Event;
-use cgmath::{perspective, InnerSpace, Matrix4, Point3, Rad, Vector3};
+use cgmath::{perspective, Angle, InnerSpace, Matrix4, Point3, Rad, Vector3};
 use wgpu::{util::DeviceExt, BindGroup, BindGroupLayout, Buffer, Device};
 use winit::keyboard::KeyCode;
 
@@ -236,7 +236,8 @@ impl CameraController {
 
     // Move forward/backward and left/right
     let (yaw_sin, yaw_cos) = self.camera.yaw.0.sin_cos();
-    let forward = Vector3::new(yaw_cos, 0.0, yaw_sin).normalize();
+    let pitch = self.camera.pitch.0;
+    let forward = Vector3::new(yaw_cos, pitch, yaw_sin).normalize();
     let right = Vector3::new(-yaw_sin, 0.0, yaw_cos).normalize();
     self.camera.position +=
       forward * (self.amount_forward - self.amount_backward) * self.speed * dt;
