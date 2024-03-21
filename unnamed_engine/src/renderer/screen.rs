@@ -1,8 +1,7 @@
 use wgpu::util::DeviceExt;
 
 use super::{
-  texture::{self, Texture},
-  viewport::Viewport,
+  material::Material, texture::{self, Texture}, viewport::Viewport
 };
 
 #[repr(C)]
@@ -57,7 +56,7 @@ const SCREEN_INDICES: &[u16] = &[0, 1, 2, 2, 1, 3];
 pub struct Screen {
   pub diffuse_texture: Texture,
   pub depth_texture: Texture,
-  pub shader: wgpu::ShaderModule,
+  pub material: Material,
   pub vertex_buffer: wgpu::Buffer,
   pub index_buffer: wgpu::Buffer,
   pub pipeline: wgpu::RenderPipeline,
@@ -81,10 +80,7 @@ impl Screen {
     let depth_texture =
       texture::Texture::create_depth_texture(device, &viewport.config, "screen_depth_texture");
 
-    let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-      label: None,
-      source: wgpu::ShaderSource::Wgsl(include_str!("../screen.wgsl").into()),
-    });
+    let material = Material::from_string(&device, include_str!("../screen.wgsl").into());
 
     let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
       label: Some("screen_vertex_buffer"),
@@ -108,12 +104,12 @@ impl Screen {
       label: Some("screen_render_pipeline"),
       layout: Some(&pipeline_layout),
       vertex: wgpu::VertexState {
-        module: &shader,
+        module: material.shader(),
         entry_point: "vs_main",
         buffers: &[Vertex::desc()],
       },
       fragment: Some(wgpu::FragmentState {
-        module: &shader,
+        module: material.shader(),
         entry_point: "fs_main",
         targets: &[Some(wgpu::ColorTargetState {
           format: viewport.format,
@@ -142,7 +138,7 @@ impl Screen {
     Self {
       diffuse_texture,
       depth_texture,
-      shader,
+      material,
       vertex_buffer,
       index_buffer,
       pipeline,

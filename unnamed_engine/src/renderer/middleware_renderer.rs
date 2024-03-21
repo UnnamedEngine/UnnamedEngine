@@ -8,16 +8,12 @@ use wgpu::util::DeviceExt;
 use crate::{gui::{egui_renderer::EguiRenderer, gui::gui}, voxel::{rendering::{ChunkMesh, Vertex}, Chunk, CHUNK_AREA, CHUNK_SIZE, CHUNK_VOLUME}};
 
 use super::{
-  camera::CameraController,
-  screen::Screen,
-  texture::{self, Texture},
-  transform::{Transform, TransformRaw},
-  viewport::Viewport,
+  camera::CameraController, material::Material, screen::Screen, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport
 };
 
 pub struct MiddlewareRenderer {
   texture_bind_group_layout: wgpu::BindGroupLayout,
-  shader: wgpu::ShaderModule,
+  material: Material,
   pipeline: wgpu::RenderPipeline,
   transforms: Vec<Transform>,
   instance_buffer: wgpu::Buffer,
@@ -75,21 +71,18 @@ impl MiddlewareRenderer {
       push_constant_ranges: &[],
     });
 
-    let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
-      label: Some("shader"),
-      source: wgpu::ShaderSource::Wgsl(include_str!("../shader.wgsl").into()),
-    });
+    let material = Material::from_string(&device, include_str!("../shader.wgsl").into());
 
     let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
       label: Some("pipeline"),
       layout: Some(&pipeline_layout),
       vertex: wgpu::VertexState {
-        module: &shader,
+        module: material.shader(),
         entry_point: "vs_main",
         buffers: &[Vertex::desc(), TransformRaw::desc()],
       },
       fragment: Some(wgpu::FragmentState {
-        module: &shader,
+        module: material.shader(),
         entry_point: "fs_main",
         targets: &[Some(wgpu::ColorTargetState {
           format: viewport.format,
@@ -163,7 +156,7 @@ impl MiddlewareRenderer {
 
     Self {
       texture_bind_group_layout,
-      shader,
+      material,
       pipeline,
       transforms,
       instance_buffer,

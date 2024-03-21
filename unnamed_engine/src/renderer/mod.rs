@@ -8,3 +8,4 @@ pub mod screen;
 pub mod texture;
 pub mod transform;
 pub mod viewport;
+pub mod material;

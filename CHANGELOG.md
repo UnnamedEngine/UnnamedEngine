@@ -1,6 +1,8 @@
 ## 0.0.20d - 21/03/2024
 - Added `ChunkMesh`
 - Rendering now renders an entire chunk per draw call
+- Added `Material` to hold information related to shaders
+- Changed all `ShaderModule`s into `Material`s
 
 ## 0.0.19d - 19/03/2024
 - Renamed `res` to `assets`

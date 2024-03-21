@@ -21,5 +21,6 @@ egui-winit = "0.26.0"
 quinn = "0.10.0"
 rustls = { version = "*", features = ["dangerous_configuration", "quic"] }
 instant = "0.1.12"
+uuid = { version = "1.8.0", features = ["v4", "macro-diagnostics"] }
 
 rcgen = "0.12.1"

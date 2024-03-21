@@ -1,5 +1,7 @@
 use wgpu::util::DeviceExt;
 
+use crate::renderer::viewport::Viewport;
+
 use super::Chunk;
 
 #[repr(C)]
