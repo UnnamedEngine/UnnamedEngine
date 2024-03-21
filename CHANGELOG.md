@@ -1,10 +1,13 @@
+## 0.0.20d - 21/03/2024
+- Added `ChunkMesh`
+- Rendering now renders an entire chunk per draw call
+
 ## 0.0.19d - 19/03/2024
 - Renamed `res` to `assets`
 - Created `assets/textures`
 - Moved `dirt.png` to `assets/textures`
 - Added `Chunk`, `ChunkIterator` and `ChunkVoxelPosition`
 - `Camera` now properly moves forward
-- Rendering cubes
 
 ## 0.0.18d - 01/03/2024
 

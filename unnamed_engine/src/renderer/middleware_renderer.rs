@@ -1,11 +1,11 @@
 //! ## Middleware Renderer
 //!
 //! Defines a middleware that stores and executes everything related to the graphics library.
-use cgmath::{InnerSpace, Rotation3, Zero};
+use cgmath::Rotation3;
 use egui_wgpu::ScreenDescriptor;
 use wgpu::util::DeviceExt;
 
-use crate::{gui::{egui_renderer::EguiRenderer, gui::gui}, voxel::{Chunk, CHUNK_AREA, CHUNK_SIZE, CHUNK_VOLUME}};
+use crate::{gui::{egui_renderer::EguiRenderer, gui::gui}, voxel::{rendering::{ChunkMesh, Vertex}, Chunk, CHUNK_AREA, CHUNK_SIZE, CHUNK_VOLUME}};
 
 use super::{
   camera::CameraController,
@@ -15,90 +15,16 @@ use super::{
   viewport::Viewport,
 };
 
-#[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-struct Vertex {
-  position: [f32; 3],
-  color: [f32; 3],
-}
-
-impl Vertex {
-  fn desc() -> wgpu::VertexBufferLayout<'static> {
-    wgpu::VertexBufferLayout {
-      array_stride: std::mem::size_of::<Vertex>() as wgpu::BufferAddress,
-      step_mode: wgpu::VertexStepMode::Vertex,
-      attributes: &[
-        wgpu::VertexAttribute {
-          offset: 0,
-          shader_location: 0,
-          format: wgpu::VertexFormat::Float32x3,
-        },
-        wgpu::VertexAttribute {
-          offset: std::mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
-          shader_location: 1,
-          format: wgpu::VertexFormat::Float32x3,
-        },
-      ],
-    }
-  }
-}
-
-const VERTICES: &[Vertex] = &[
-  Vertex { // 0
-    position: [-0.5, -0.5, 0.5],
-    color: [1.0, 0.0, 0.0],
-  },
-  Vertex { // 1
-    position: [0.5, -0.5, 0.5],
-    color: [0.0, 1.0, 0.0],
-  },
-  Vertex { // 2
-    position: [-0.5, 0.5, 0.5],
-    color: [0.0, 0.0, 1.0],
-  },
-  Vertex { // 3
-    position: [0.5, 0.5, 0.5],
-    color: [1.0, 1.0, 0.0],
-  },
-  Vertex { // 4
-    position: [-0.5, -0.5, -0.5],
-    color: [0.0, 1.0, 1.0],
-  },
-  Vertex { // 5
-    position: [0.5, -0.5, -0.5],
-    color: [1.0, 1.0, 0.0],
-  },
-  Vertex { // 6
-    position: [-0.5, 0.5, -0.5],
-    color: [1.0, 0.0, 0.0],
-  },
-  Vertex { // 7
-    position: [0.5, 0.5, -0.5],
-    color: [0.0, 0.0, 1.0],
-  },
-];
-
-const INDICES: &[u16] = &[
-  0, 1, 2, 2, 1, 3,
-  5, 7, 4, 4, 7, 6,
-  4, 6, 0, 0, 6, 2,
-  1, 3, 5, 5, 3, 7,
-  2, 6, 3, 3, 6, 7,
-  4, 0, 5, 5, 0, 1,
-  ];
-
 pub struct MiddlewareRenderer {
   texture_bind_group_layout: wgpu::BindGroupLayout,
   shader: wgpu::ShaderModule,
   pipeline: wgpu::RenderPipeline,
-  vertex_buffer: wgpu::Buffer,
-  index_buffer: wgpu::Buffer,
   transforms: Vec<Transform>,
   instance_buffer: wgpu::Buffer,
-  num_indices: u32,
   screen: Screen,
 
   test_texture: Texture,
+  chunk_mesh: ChunkMesh,
 }
 
 impl MiddlewareRenderer {
@@ -195,19 +121,6 @@ impl MiddlewareRenderer {
       multiview: None,
     });
 
-    let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-      label: Some("vertex_buffer"),
-      contents: bytemuck::cast_slice(VERTICES),
-      usage: wgpu::BufferUsages::VERTEX,
-    });
-
-    let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-      label: Some("index_buffer"),
-      contents: bytemuck::cast_slice(INDICES),
-      usage: wgpu::BufferUsages::INDEX,
-    });
-
-    let num_indices = INDICES.len() as u32;
 
     let mut voxels = [0; CHUNK_VOLUME];
     for x in 0..CHUNK_SIZE - 1 {
@@ -217,29 +130,29 @@ impl MiddlewareRenderer {
     }
 
     let chunk = Chunk::new(Default::default(), voxels);
-    let transforms = chunk.iter()
-    .map(|(position, voxel)| {
-      let position = cgmath::Vector3 {
-        x: position.x as f32,
-        y: position.y as f32,
-        z: position.z as f32,
-      };
+    let mut transforms: Vec<Transform> = Vec::new();
+    let position = cgmath::Vector3 {
+      x: 0.0,
+      y: 0.0,
+      z: 0.0,
+    };
 
-      let rotation = cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0));
+    let rotation = cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0));
 
-      let scale = cgmath::Vector3 {
-        x: 1.0,
-        y: 1.0,
-        z: 1.0,
-      };
+    let scale = cgmath::Vector3 {
+      x: 1.0,
+      y: 1.0,
+      z: 1.0,
+    };
 
+    transforms.push(
       Transform {
         position,
         rotation,
         scale,
-      }
-    })
-    .collect::<Vec<_>>();
+      });
+
+    let chunk_mesh = ChunkMesh::new(device, &chunk);
 
     let instance_data = transforms.iter().map(Transform::to_raw).collect::<Vec<_>>();
     let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -252,13 +165,11 @@ impl MiddlewareRenderer {
       texture_bind_group_layout,
       shader,
       pipeline,
-      vertex_buffer,
-      index_buffer,
-      num_indices,
       transforms,
       instance_buffer,
       screen,
       test_texture,
+      chunk_mesh,
     }
   }
 
@@ -317,12 +228,12 @@ impl MiddlewareRenderer {
         render_pass.set_bind_group(0, test_texture, &[]);
       }
       render_pass.set_bind_group(1, &camera_controller.bind_group, &[]);
-      render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+      render_pass.set_vertex_buffer(0, self.chunk_mesh.vertex_buffer.slice(..));
 
       render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
-      render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+      render_pass.set_index_buffer(self.chunk_mesh.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
 
-      render_pass.draw_indexed(0..self.num_indices, 0, 0..self.transforms.len() as _);
+      render_pass.draw_indexed(0..self.chunk_mesh.indices, 0, 0..self.transforms.len() as _);
     }
 
     self.screen.draw(&mut encoder, &window_view);
