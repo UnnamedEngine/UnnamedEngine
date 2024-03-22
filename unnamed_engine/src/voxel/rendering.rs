@@ -1,7 +1,5 @@
 use wgpu::util::DeviceExt;
 
-use crate::renderer::viewport::Viewport;
-
 use super::Chunk;
 
 #[repr(C)]
@@ -90,7 +88,7 @@ impl ChunkMesh {
     let mut vertices: Vec<Vertex> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
     let mut counter: u32 = 0;
-    for (position, voxel) in chunk.iter() {
+    for (position, _voxel) in chunk.iter() {
       for vertex in VERTICES {
         let mut vertex = vertex.clone();
         vertex.position = [
