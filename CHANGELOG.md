@@ -1,3 +1,7 @@
+## 0.0.21d - 23/03/2024
+- Fixed voxel index order
+- Added backface culling
+
 ## 0.0.20d - 21/03/2024
 - Added `ChunkMesh`
 - Rendering now renders an entire chunk per draw call
