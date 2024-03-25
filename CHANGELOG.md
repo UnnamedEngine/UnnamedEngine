@@ -1,5 +1,6 @@
 ## 0.0.22d - 25/03/2024
 - Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
+- Removed unused `core/application.rs`
 
 ## 0.0.21d - 23/03/2024
 - Fixed voxel index order

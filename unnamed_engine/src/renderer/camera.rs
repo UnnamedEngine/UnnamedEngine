@@ -4,7 +4,7 @@
 use std::{f32::consts::FRAC_2_PI, time::Duration};
 
 use crate::event::event::Event;
-use cgmath::{perspective, Angle, InnerSpace, Matrix4, Point3, Rad, Vector3};
+use cgmath::{perspective, InnerSpace, Matrix4, Point3, Rad, Vector3};
 use wgpu::{util::DeviceExt, BindGroup, BindGroupLayout, Buffer, Device};
 use winit::keyboard::KeyCode;
 
