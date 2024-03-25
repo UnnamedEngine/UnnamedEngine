@@ -3,6 +3,7 @@
 //! Abstract way to represent a window and its presentation surface.
 use std::sync::Arc;
 
+use wgpu::PresentMode;
 use winit::window::Window;
 
 pub struct ViewportDesc {
@@ -38,12 +39,21 @@ impl ViewportDesc {
       .find(|f| f.is_srgb())
       .unwrap_or(caps.formats[0]);
 
+    // Try to find a present mode that is immediate, if none is found then use
+    // any other found.
+    let present_mode = match caps.present_modes
+    .iter()
+    .find(|present_mode| { **present_mode == PresentMode::Immediate }) {
+      None => caps.present_modes[0],
+      Some(mode) => *mode,
+    };
+
     let config = wgpu::SurfaceConfiguration {
       usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
       format,
       width: size.width,
       height: size.height,
-      present_mode: wgpu::PresentMode::Immediate,
+      present_mode,
       desired_maximum_frame_latency: 2,
       alpha_mode: caps.alpha_modes[0],
       view_formats: vec![],
