@@ -1,3 +1,6 @@
+## 0.0.22d - 25/03/2024
+- Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
+
 ## 0.0.21d - 23/03/2024
 - Fixed voxel index order
 - Added backface culling
