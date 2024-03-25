@@ -1,7 +1,9 @@
 use egui::Context;
 
-pub fn gui(ui: &Context) {
-  egui::Window::new("Test")
+use crate::renderer::middleware_renderer::RenderingStats;
+
+pub fn gui(ui: &Context, rendering_stats: &RenderingStats) {
+  egui::Window::new("Rendering Stats")
     .default_open(true)
     .max_width(1000.0)
     .max_height(800.00)
@@ -12,12 +14,7 @@ pub fn gui(ui: &Context) {
     .resizable(true)
     .movable(true)
     .show(&ui, |ui| {
-      if ui.add(egui::Button::new("Click me!")).clicked() {
-        log::info!("YOU CLICKED ME YAY!!!");
-      }
-
-      ui.label("Slider");
-      ui.add(egui::Slider::new(&mut 0, 0..=100).text("number"));
-      ui.end_row();
+      ui.label(format!("VRAM: {} KB", rendering_stats.bytes / 1024));
+      ui.label(format!("Rendering Loop: {} ms", rendering_stats.delta.as_millis()));
     });
 }

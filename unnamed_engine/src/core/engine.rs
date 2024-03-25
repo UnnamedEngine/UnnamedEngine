@@ -118,6 +118,7 @@ impl Engine {
 
     event_loop
       .run(move |event, elwt| {
+        elwt.set_control_flow(winit::event_loop::ControlFlow::Poll);
         match event {
           WinitEvent::WindowEvent {
             ref event,

@@ -1,6 +1,9 @@
 ## 0.0.22d - 25/03/2024
 - Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
 - Removed unused `core/application.rs`
+- Changed wgpu `present_mode` into `Immediate`
+- Removed test egui rendering
+- Added gui with rendering stats
 
 ## 0.0.21d - 23/03/2024
 - Fixed voxel index order

@@ -3,6 +3,7 @@
 //! Defines a middleware that stores and executes everything related to the graphics library.
 use cgmath::Rotation3;
 use egui_wgpu::ScreenDescriptor;
+use instant::{Duration, Instant};
 use wgpu::util::DeviceExt;
 
 use crate::{gui::{egui_renderer::EguiRenderer, gui::gui}, voxel::{rendering::{ChunkMesh, Vertex}, Chunk, CHUNK_AREA, CHUNK_SIZE, CHUNK_VOLUME}};
@@ -11,7 +12,23 @@ use super::{
   camera::CameraController, material::Material, screen::Screen, texture::{self, Texture}, transform::{Transform, TransformRaw}, viewport::Viewport
 };
 
+pub struct RenderingStats {
+  pub bytes: usize,
+  pub delta: Duration,
+}
+
+impl Default for RenderingStats {
+  fn default() -> Self {
+    Self {
+      bytes: Default::default(),
+      delta: Default::default(),
+    }
+  }
+}
+
 pub struct MiddlewareRenderer {
+  stats: RenderingStats,
+
   texture_bind_group_layout: wgpu::BindGroupLayout,
   material: Material,
   pipeline: wgpu::RenderPipeline,
@@ -145,7 +162,9 @@ impl MiddlewareRenderer {
         scale,
       });
 
-    let chunk_mesh = ChunkMesh::new(device, &chunk);
+    let mut stats = RenderingStats::default();
+
+    let chunk_mesh = ChunkMesh::new(device, &chunk, &mut stats);
 
     let instance_data = transforms.iter().map(Transform::to_raw).collect::<Vec<_>>();
     let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -155,6 +174,7 @@ impl MiddlewareRenderer {
     });
 
     Self {
+      stats,
       texture_bind_group_layout,
       material,
       pipeline,
@@ -174,6 +194,10 @@ impl MiddlewareRenderer {
     camera_controller: &CameraController,
     egui: &mut EguiRenderer,
   ) -> Result<(), wgpu::SurfaceError> {
+    // Delta measuring
+    let delta_start = Instant::now();
+
+    // Rendering start
     let output = viewport.get_current_texture();
 
     let renderer_view = &self.screen.diffuse_texture.view;
@@ -243,12 +267,17 @@ impl MiddlewareRenderer {
       &viewport.desc.window,
       &window_view,
       screen_descriptor,
+      &self.stats,
       gui,
     );
 
     // Submit will accept anything that implements IntoIter
     queue.submit(std::iter::once(encoder.finish()));
     output.present();
+
+    // Delta measuring
+    let delta_end = Instant::now();
+    self.stats.delta = delta_end.duration_since(delta_start);
 
     Ok(())
   }

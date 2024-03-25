@@ -9,6 +9,9 @@ use egui_winit::State;
 use wgpu::{CommandEncoder, Device, Queue, TextureFormat, TextureView};
 use winit::event::WindowEvent;
 use winit::window::Window;
+
+use crate::core::engine::Engine;
+use crate::renderer::middleware_renderer::RenderingStats;
 pub struct EguiRenderer {
   pub context: Context,
   state: State,
@@ -64,11 +67,12 @@ impl EguiRenderer {
     window: &Window,
     window_surface_view: &TextureView,
     screen_descriptor: ScreenDescriptor,
-    run_ui: impl FnOnce(&Context),
+    rendering_stats: &RenderingStats,
+    run_ui: impl FnOnce(&Context, &RenderingStats),
   ) {
     let raw_input = self.state.take_egui_input(window);
     let full_output = self.context.run(raw_input, |_ui| {
-      run_ui(&self.context);
+      run_ui(&self.context, rendering_stats);
     });
 
     self

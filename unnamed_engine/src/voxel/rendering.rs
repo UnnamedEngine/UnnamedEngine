@@ -1,4 +1,8 @@
+use std::mem::size_of;
+
 use wgpu::util::DeviceExt;
+
+use crate::renderer::middleware_renderer::RenderingStats;
 
 use super::Chunk;
 
@@ -84,6 +88,7 @@ impl ChunkMesh {
   pub fn new(
     device: &wgpu::Device,
     chunk: &Chunk,
+    stats: &mut RenderingStats,
   ) -> Self {
     let mut vertices: Vec<Vertex> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -114,6 +119,11 @@ impl ChunkMesh {
       contents: bytemuck::cast_slice(indices.as_slice()),
       usage: wgpu::BufferUsages::INDEX,
     });
+
+    let vertices_byte_size = size_of::<Vertex>() * vertices.len();
+    let indices_byte_size = size_of::<u32>() * indices.len();
+
+    stats.bytes += vertices_byte_size + indices_byte_size;
 
     Self {
       vertex_buffer,
