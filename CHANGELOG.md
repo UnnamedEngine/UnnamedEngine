@@ -1,3 +1,6 @@
+## 0.0.23d - 30/03/2024
+- Better encapsulation for `Renderer` and `MiddlewareRenderer`
+
 ## 0.0.22d - 25/03/2024
 - Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
 - Removed unused `core/application.rs`

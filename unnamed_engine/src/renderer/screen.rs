@@ -96,7 +96,9 @@ impl Screen {
 
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
       label: Some("screen_render_pipeline_layout"),
-      bind_group_layouts: &[bind_group_layout],
+      bind_group_layouts: &[
+        bind_group_layout,
+        ],
       push_constant_ranges: &[],
     });
 
@@ -104,12 +106,12 @@ impl Screen {
       label: Some("screen_render_pipeline"),
       layout: Some(&pipeline_layout),
       vertex: wgpu::VertexState {
-        module: material.shader(),
+        module: &material.shader,
         entry_point: "vs_main",
         buffers: &[Vertex::desc()],
       },
       fragment: Some(wgpu::FragmentState {
-        module: material.shader(),
+        module: &material.shader,
         entry_point: "fs_main",
         targets: &[Some(wgpu::ColorTargetState {
           format: viewport.format,

@@ -11,7 +11,7 @@ use winit::event::WindowEvent;
 use winit::window::Window;
 
 use crate::core::engine::Engine;
-use crate::renderer::middleware_renderer::RenderingStats;
+use crate::renderer::renderer::RenderingStats;
 pub struct EguiRenderer {
   pub context: Context,
   state: State,

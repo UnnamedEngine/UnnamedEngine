@@ -1,6 +1,6 @@
 use egui::Context;
 
-use crate::renderer::middleware_renderer::RenderingStats;
+use crate::renderer::renderer::RenderingStats;
 
 pub fn gui(ui: &Context, rendering_stats: &RenderingStats) {
   egui::Window::new("Rendering Stats")

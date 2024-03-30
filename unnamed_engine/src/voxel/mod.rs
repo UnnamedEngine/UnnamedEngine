@@ -1,3 +1,8 @@
+//! ## Voxel
+//!
+//! In our environment, a voxel is simply a volumetric **space** that can be
+//! occupied by something, that something being anything that fits inside of a
+//! voxel.
 pub mod rendering;
 
 use wgpu::Color;
@@ -13,7 +18,9 @@ pub const PALETTE_SIZE: usize = 16;
 /// Used to access the palette inside of a chunk
 pub type VoxelIndex = u8;
 
-/// A `Chunk` contains data
+/// A `Chunk` represents a set of voxels in the world, note that chunks store a
+/// palette and the stored voxels are just references to the palette, that way
+/// we can minimize the amount of data stored per chunk.
 #[repr(C)]
 pub struct Chunk {
   pub palette: [Color; PALETTE_SIZE],
@@ -31,10 +38,12 @@ impl Chunk {
     }
   }
 
+  /// Sets a voxel at the requested position
   pub fn set(&mut self, x: u32, y: u32, z: u32, voxel: VoxelIndex) {
     self.voxels[(x as usize * CHUNK_AREA) + (y as usize * CHUNK_SIZE) + z as usize] = voxel;
   }
 
+  /// Gets the voxel at the requrest position
   pub fn get(&self, x: u32, y: u32, z: u32) -> VoxelIndex {
     self.voxels[(x as usize * CHUNK_AREA) + (y as usize * CHUNK_SIZE) + z as usize]
   }

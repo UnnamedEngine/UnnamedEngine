@@ -40,7 +40,7 @@ impl ViewportDesc {
       .unwrap_or(caps.formats[0]);
 
     // Try to find a present mode that is immediate, if none is found then use
-    // any other found.
+    // any other found
     let present_mode = match caps.present_modes
     .iter()
     .find(|present_mode| { **present_mode == PresentMode::Immediate }) {

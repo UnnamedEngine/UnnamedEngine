@@ -2,7 +2,7 @@ use std::mem::size_of;
 
 use wgpu::util::DeviceExt;
 
-use crate::renderer::middleware_renderer::RenderingStats;
+use crate::renderer::renderer::RenderingStats;
 
 use super::Chunk;
 

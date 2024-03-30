@@ -3,8 +3,8 @@ use std::{error::Error, fs, path::PathBuf};
 /// A material holds the necessary information that a shader will need in order
 /// to work, think of a material as a wrapper for a shader.
 pub struct Material {
-  shader: wgpu::ShaderModule,
-  path: Option<PathBuf>,
+  pub shader: wgpu::ShaderModule,
+  pub path: Option<PathBuf>,
 }
 
 impl Material {
@@ -39,15 +39,5 @@ impl Material {
       shader,
       path: None,
     }
-  }
-
-  /// Returns a reference to the shader
-  pub fn shader(&self) -> &wgpu::ShaderModule {
-    &self.shader
-  }
-
-  /// Returns a reference to the path
-  pub fn path(&self) -> &Option<PathBuf> {
-    &self.path
   }
 }
