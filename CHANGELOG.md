@@ -1,5 +1,8 @@
 ## 0.0.23d - 30/03/2024
 - Better encapsulation for `Renderer` and `MiddlewareRenderer`
+- Updated `egui` to `0.27.1`
+- Updated `egui-wgpu` to `0.27.1`
+- Updated `egui-winit` to `0.27.1`
 
 ## 0.0.22d - 25/03/2024
 - Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
