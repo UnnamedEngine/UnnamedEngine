@@ -1,3 +1,7 @@
+## 0.0.24d - 16/05/2024
+- Added barebones dependency injection with `core/scheduler.rs`
+- Added baerbones `Application` at `core/application.rs`
+
 ## 0.0.23d - 30/03/2024
 - Better encapsulation for `Renderer` and `MiddlewareRenderer`
 - Updated `egui` to `0.27.1`
@@ -63,7 +67,7 @@
 - Added `instant`
 - `Events` are no more passed as a borrow
 - Added barebones `Chunk` and `Voxel` (WIP)
-- BUG - Camera is not working anymore due to an attempt to introduce better movement and rotation
+- FIX - Camera is not working anymore due to an attempt to introduce better movement and rotation
 
 ## 0.0.13d - 25/02/2024
 

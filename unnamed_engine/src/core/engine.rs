@@ -1,9 +1,9 @@
 //! ## Engine
 //!
 //! Defines the engine struct.
-use std::error::Error;
+use std::{collections::HashMap, error::Error};
 
-use super::state::State;
+use super::{scheduler::Scheduler, state::State};
 
 use crate::{
   event::event::Event,
@@ -133,7 +133,6 @@ impl Engine {
               // Resize event
               WinitWindowEvent::Resized(physical_size) => {
                 // Create and dispatch resize event
-                // TODO make it work as an event
                 self.on_event(
                   Event::Resize {
                     width: physical_size.width,
