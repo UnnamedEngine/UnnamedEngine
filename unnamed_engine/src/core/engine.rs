@@ -3,7 +3,7 @@
 //! Defines the engine struct.
 use std::{collections::HashMap, error::Error};
 
-use super::{scheduler::Scheduler, state::State};
+use super::{scheduler::{Res, Scheduler}, state::State};
 
 use crate::{
   event::event::Event,
@@ -29,6 +29,10 @@ pub struct Engine {
   title: String,
   pub input_manager: InputManager,
   pub state: Option<State>,
+}
+
+fn foo(int: Res<i32>) {
+  log::info!("{}", *int);
 }
 
 impl Engine {
@@ -71,6 +75,13 @@ impl Engine {
     env_logger::init_from_env(env);
 
     start_f(self);
+
+    let mut scheduler = Scheduler::default();
+
+    scheduler.add_system(foo);
+    scheduler.add_resource(12i32);
+
+    scheduler.run();
 
     let runtime = Runtime::new().unwrap();
 

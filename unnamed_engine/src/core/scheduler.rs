@@ -1,61 +1,50 @@
-use std::{any::{Any, TypeId}, collections::HashMap, marker::PhantomData};
-
-pub struct FunctionSystem<Input, F> {
-  f: F,
-  marker: PhantomData<fn() -> Input>,
-}
-
-pub trait System {
-  fn run(&mut self, resources: &mut HashMap<TypeId, Box<dyn Any>>);
-}
+use std::any::{Any, TypeId};
+use std::cell::{Ref, RefCell, RefMut};
+use std::collections::HashMap;
+use std::marker::PhantomData;
+use std::ops::{Deref, DerefMut};
 
 macro_rules! impl_system {
   (
-    $(
-      $($params:ident),+
-    )?
+    $($params:ident),*
   ) => {
     #[allow(non_snake_case)]
     #[allow(unused)]
-    impl<
-      F: FnMut(
-        $( $($params),+ )?
-      )
-      $(, $($params: 'static),+ )?
-    > System for FunctionSystem<($( $($params,)+ )?), F> {
-      fn run(&mut self, resources: &mut HashMap<TypeId, Box<dyn Any>>) {
-        $($(
-          let $params = *resources.remove(&TypeId::of::<$params>()).unwrap().downcast::<$params>().unwrap();
-        )+)?
+    impl<F, $($params: SystemParam),*> System for FunctionSystem<($($params,)*), F>
+      where
+        for<'a, 'b> &'a mut F:
+          FnMut( $($params),* ) +
+          FnMut( $(<$params as SystemParam>::Item<'b>),* )
+    {
+      fn run(&mut self, resources: &mut HashMap<TypeId, RefCell<Box<dyn Any>>>) {
+        fn call_inner<$($params),*>(
+          mut f: impl FnMut($($params),*),
+          $($params: $params),*
+        ) {
+          f($($params),*)
+        }
 
-        (self.f)(
-          $($($params),+)?
-        );
+        $(
+          let $params = $params::retrieve(resources);
+        )*
+
+        call_inner(&mut self.f, $($params),*)
       }
     }
   }
 }
 
-impl_system!();
-impl_system!(T1);
-impl_system!(T1, T2);
-impl_system!(T1, T2, T3);
-impl_system!(T1, T2, T3, T4);
-
-trait IntoSystem<Input> {
-  type System: System;
-
-  fn into_system(self) -> Self::System;
-}
-
 macro_rules! impl_into_system {
   (
-    $($(
-      $params:ident
-    ),+)?
+    $($params:ident),*
   ) => {
-    impl<F: FnMut($($($params),+)?) $(, $($params: 'static),+ )?> IntoSystem<( $($($params,)+)? )> for F {
-      type System = FunctionSystem<( $($($params,)+)? ), Self>;
+    impl<F, $($params: SystemParam),*> IntoSystem<($($params,)*)> for F
+      where
+        for<'a, 'b> &'a mut F:
+          FnMut( $($params),* ) +
+          FnMut( $(<$params as SystemParam>::Item<'b>),* )
+    {
+      type System = FunctionSystem<($($params,)*), Self>;
 
       fn into_system(self) -> Self::System {
         FunctionSystem {
@@ -67,6 +56,87 @@ macro_rules! impl_into_system {
   }
 }
 
+pub trait SystemParam {
+  type Item<'new>;
+
+  fn retrieve<'r>(resources: &'r HashMap<TypeId, RefCell<Box<dyn Any>>>) -> Self::Item<'r>;
+}
+
+impl<'res, T: 'static> SystemParam for Res<'res, T> {
+  type Item<'new> = Res<'new, T>;
+
+  fn retrieve<'r>(resources: &'r HashMap<TypeId, RefCell<Box<dyn Any>>>) -> Self::Item<'r> {
+    Res {
+      value: resources.get(&TypeId::of::<T>()).unwrap().borrow(),
+      _marker: PhantomData,
+    }
+  }
+}
+
+impl<'res, T: 'static> SystemParam for ResMut<'res, T> {
+  type Item<'new> = ResMut<'new, T>;
+
+  fn retrieve<'r>(resources: &'r HashMap<TypeId, RefCell<Box<dyn Any>>>) -> Self::Item<'r> {
+    ResMut {
+      value: resources.get(&TypeId::of::<T>()).unwrap().borrow_mut(),
+      _marker: PhantomData,
+    }
+  }
+}
+
+pub struct Res<'a, T: 'static> {
+  value: Ref<'a, Box<dyn Any>>,
+  _marker: PhantomData<&'a T>,
+}
+
+impl<T: 'static> Deref for Res<'_, T> {
+  type Target = T;
+
+  fn deref(&self) -> &T {
+    self.value.downcast_ref().unwrap()
+  }
+}
+
+pub struct ResMut<'a, T: 'static> {
+  value: RefMut<'a, Box<dyn Any>>,
+  _marker: PhantomData<&'a mut T>,
+}
+
+impl<T: 'static> Deref for ResMut<'_, T> {
+  type Target = T;
+
+  fn deref(&self) -> &T {
+    self.value.downcast_ref().unwrap()
+  }
+}
+
+impl<T: 'static> DerefMut for ResMut<'_, T> {
+  fn deref_mut(&mut self) -> &mut T {
+    self.value.downcast_mut().unwrap()
+  }
+}
+
+pub struct FunctionSystem<Input, F> {
+  f: F,
+  marker: PhantomData<fn() -> Input>,
+}
+
+pub trait System {
+  fn run(&mut self, resources: &mut HashMap<TypeId, RefCell<Box<dyn Any>>>);
+}
+
+impl_system!();
+impl_system!(T1);
+impl_system!(T1, T2);
+impl_system!(T1, T2, T3);
+impl_system!(T1, T2, T3, T4);
+
+pub trait IntoSystem<Input> {
+  type System: System;
+
+  fn into_system(self) -> Self::System;
+}
+
 impl_into_system!();
 impl_into_system!(T1);
 impl_into_system!(T1, T2);
@@ -75,9 +145,10 @@ impl_into_system!(T1, T2, T3, T4);
 
 type StoredSystem = Box<dyn System>;
 
+#[derive(Default)]
 pub struct Scheduler {
-  pub systems: Vec<StoredSystem>,
-  pub resources: HashMap<TypeId, Box<dyn Any>>,
+  systems: Vec<StoredSystem>,
+  resources: HashMap<TypeId, RefCell<Box<dyn Any>>>,
 }
 
 impl Scheduler {
@@ -92,7 +163,7 @@ impl Scheduler {
   }
 
   pub fn add_resource<R: 'static>(&mut self, res: R) {
-    self.resources.insert(TypeId::of::<R>(), Box::new(res));
+    self.resources
+    .insert(TypeId::of::<R>(), RefCell::new(Box::new(res)));
   }
 }
-
