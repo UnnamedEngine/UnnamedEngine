@@ -1,6 +1,9 @@
+## 0.0.25d - 17/05/2024
+- Completely removed dependency injection pattern and `Application`
+
 ## 0.0.24d - 16/05/2024
 - Added barebones dependency injection with `core/scheduler.rs`
-- Added baerbones `Application` at `core/application.rs`
+- Added barebones `Application` at `core/application.rs`
 
 ## 0.0.23d - 30/03/2024
 - Better encapsulation for `Renderer` and `MiddlewareRenderer`
