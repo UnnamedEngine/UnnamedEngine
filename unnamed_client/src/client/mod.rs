@@ -1,2 +1,0 @@
-//! ## Client
-pub mod client;

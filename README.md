@@ -11,9 +11,9 @@ Open-source game engine made to power high performant simulation games. The main
 (As a side note, this engine is being created to power two custom games, don't expect help or documentation yet)
 
 ## Supported Platforms
-- [x] Windows 10/11
-- [x] Linux
-- [x] MacOS
+- [ ] Windows 10/11
+- [ ] Linux
+- [ ] MacOS
 - [ ] Android
 - [ ] IOS
 - [ ] Web

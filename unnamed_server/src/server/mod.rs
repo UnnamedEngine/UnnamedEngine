@@ -1,2 +1,0 @@
-//! ## Server
-pub mod server;

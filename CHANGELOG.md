@@ -1,17 +1,28 @@
+## 0.0.26d - 10/09/2024
+
+- Started a remake from zero
+- Improved the workspace settings
+- Added `Engine` structure
+- Added unit tests for `Engine` methods and functionalities
+
 ## 0.0.25d - 17/05/2024
+
 - Completely removed dependency injection pattern and `Application`
 
 ## 0.0.24d - 16/05/2024
+
 - Added barebones dependency injection with `core/scheduler.rs`
 - Added barebones `Application` at `core/application.rs`
 
 ## 0.0.23d - 30/03/2024
+
 - Better encapsulation for `Renderer` and `MiddlewareRenderer`
 - Updated `egui` to `0.27.1`
 - Updated `egui-wgpu` to `0.27.1`
 - Updated `egui-winit` to `0.27.1`
 
 ## 0.0.22d - 25/03/2024
+
 - Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
 - Removed unused `core/application.rs`
 - Changed wgpu `present_mode` into `Immediate`
@@ -19,16 +30,19 @@
 - Added gui with rendering stats
 
 ## 0.0.21d - 23/03/2024
+
 - Fixed voxel index order
 - Added backface culling
 
 ## 0.0.20d - 21/03/2024
+
 - Added `ChunkMesh`
 - Rendering now renders an entire chunk per draw call
 - Added `Material` to hold information related to shaders
 - Changed all `ShaderModule`s into `Material`s
 
 ## 0.0.19d - 19/03/2024
+
 - Renamed `res` to `assets`
 - Created `assets/textures`
 - Moved `dirt.png` to `assets/textures`

@@ -1,2 +1,0 @@
-//! ## Event
-pub mod event;
