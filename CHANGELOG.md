@@ -2,8 +2,12 @@
 
 - Started a remake from zero
 - Improved the workspace settings
+- Added `log` and `env_logger` for logging
 - Added `Engine` structure
 - Added unit tests for `Engine` methods and functionalities
+- Added `strum` to help with enums
+- Added resources and branding
+- Added `winres` to output Windows binaries with icons
 
 ## 0.0.25d - 17/05/2024
 
