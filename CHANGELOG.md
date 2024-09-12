@@ -1,3 +1,9 @@
+## 0.0.27d - 12/09/2024
+
+- Made `Engine` unit tests more legible
+- Added `Worker` structure
+- Adopted commit standard recommended by https://www.conventionalcommits.org/en/v1.0.0/
+
 ## 0.0.26d - 10/09/2024
 
 - Started a remake from zero

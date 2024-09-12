@@ -1,6 +1,6 @@
 use strum::Display;
 
-/// All the possible states the `Engine` can be at.
+/// All the possible states a `Engine` can be at.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
 pub enum EngineState {
     /// `Engine` is currently stopped and can only be started with
@@ -33,14 +33,18 @@ impl Default for Engine {
         // The logger is started here to make sure we have logging always
         // available
 
-        // Read the env values that configure the logger
-        let env = env_logger::Env::default()
-            .filter_or("MY_LOG_LEVEL", "info")
-            .write_style_or("MY_LOG_STYLE", "always");
+        // We do not want env_logger during tests
+        #[cfg(not(test))]
+        {
+            // Read the env values that configure the logger
+            let env = env_logger::Env::default()
+                .filter_or("MY_LOG_LEVEL", "info")
+                .write_style_or("MY_LOG_STYLE", "always");
 
-        // Initialize the logger from the values
-        // Now we can use `log::` everywhere without worrying
-        env_logger::init_from_env(env);
+            // Initialize the logger from the values
+            // Now we can use `log::` everywhere without worrying
+            env_logger::init_from_env(env);
+        }
 
         let data = EngineData {
             state: EngineState::Stopped,
@@ -53,11 +57,6 @@ impl Default for Engine {
 }
 
 impl Engine {
-    /// Creates a new `Engine` using `Default`.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     /// Start the `Engine`.
     pub fn run(&mut self) {
         match self.data.state {
@@ -92,14 +91,16 @@ impl Engine {
         }
     }
 
-    /// Internal function that handles the `Engine` starting.
+    /// Internal function that handles the `Engine` starting. awdkja kwjdkaj
     fn start(&mut self) {
+        // TODO: there should be something here to start the engine
         self.data.state = EngineState::Running;
         log::info!("Successfully started engine");
     }
 
     /// Internal function that handles the `Engine` stopping.
     fn stop(&mut self) {
+        // TODO: there should be something here to stop the engine
         self.data.state = EngineState::Stopped;
         log::info!("Successfully stopped engine");
     }
@@ -114,22 +115,17 @@ impl Engine {
 mod tests {
     use super::*;
 
-    /// Helper method that creates and starts an `Engine`.
-    fn create_and_start() -> Engine {
-        let mut engine = Engine::new();
-        engine.run();
-        engine
-    }
-
     #[test]
     fn engine_run_correct() {
-        let engine = create_and_start();
+        let mut engine = Engine::default();
+        engine.run();
         assert_eq!(engine.state(), EngineState::Running);
     }
 
     #[test]
     fn engine_stop_correct() {
-        let mut engine = create_and_start();
+        let mut engine = Engine::default();
+        engine.run();
         engine.shutdown();
         assert_eq!(engine.state(), EngineState::Stopped);
     }

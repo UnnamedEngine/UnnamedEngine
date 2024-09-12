@@ -3,6 +3,9 @@ name = "unnamed_engine"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies.thiserror]
+workspace = true
+
 [dependencies.log]
 workspace = true
 

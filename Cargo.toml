@@ -11,6 +11,9 @@ members = [
 version = "0.1.12"
 
 # General dependencies
+[workspace.dependencies.thiserror]
+version = "1.0.63"
+
 [workspace.dependencies.log]
 version = "0.4.22"
 
