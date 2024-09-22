@@ -3,6 +3,23 @@ resolver = "2"
 
 members = [
     "unnamed_engine",
-    "unnamed_server",
-    "unnamed_client"
+    "unnamed_client",
 ]
+
+# Build dependencies
+[workspace.dependencies.winres]
+version = "0.1.12"
+
+# General dependencies
+[workspace.dependencies.thiserror]
+version = "1.0.63"
+
+[workspace.dependencies.log]
+version = "0.4.22"
+
+[workspace.dependencies.env_logger]
+version = "0.11.5"
+
+[workspace.dependencies.strum]
+version = "0.26.3"
+features = ["derive"]

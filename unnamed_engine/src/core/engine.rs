@@ -1,110 +1,132 @@
-use super::state::State;
+use strum::Display;
 
-use winit::{
-    event::*,
-    event_loop::EventLoop,
-    window::WindowBuilder,
-    keyboard::KeyCode,
-    keyboard::PhysicalKey::Code
-};
+/// All the possible states a `Engine` can be at.
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
+pub enum EngineState {
+    /// `Engine` is currently stopped and can only be started with
+    /// `Engine::start()`.
+    Stopped,
+    /// `Engine` is currently starting and will change into
+    /// `EngineState::Running` once the starting process ends.
+    Starting,
+    /// `Engine` is currently running and can only change into
+    /// `EngineState::Stopping`.
+    Running,
+    /// `Engine` is currently stopping and will change into
+    /// `EngineState::Stopped` once the stopping process ends.
+    Stopping,
+}
 
+pub struct EngineData {
+    /// Flags the current state of the `Engine`. This value will be read a lot
+    /// and rarely will change.
+    pub state: EngineState,
+}
+
+/// Contains the major data required to run the application.
 pub struct Engine {
-    running: bool,
-    title: String,
+    data: EngineData,
+}
+
+impl Default for Engine {
+    fn default() -> Self {
+        // The logger is started here to make sure we have logging always
+        // available
+
+        // We do not want env_logger during tests
+        #[cfg(not(test))]
+        {
+            // Read the env values that configure the logger
+            let env = env_logger::Env::default()
+                .filter_or("MY_LOG_LEVEL", "info")
+                .write_style_or("MY_LOG_STYLE", "always");
+
+            // Initialize the logger from the values
+            // Now we can use `log::` everywhere without worrying
+            env_logger::init_from_env(env);
+        }
+
+        let data = EngineData {
+            state: EngineState::Stopped,
+        };
+
+        Self {
+            data,
+        }
+    }
 }
 
 impl Engine {
-    pub fn new(title: String) -> Self {
-        Engine {
-            running: false,
-            title: title,
+    /// Start the `Engine`.
+    pub fn run(&mut self) {
+        match self.data.state {
+            EngineState::Stopped => {
+                self.data.state = EngineState::Starting;
+                self.start();
+            },
+            _ => {
+                log::error!(
+                    "Can only start engine at '{}' state: tried to start at '{}' state",
+                    EngineState::Stopped,
+                    self.data.state,
+                );
+            }
         }
     }
 
-    // Starts the engine
-    // This method is the only that should be called from the application
-    pub fn start(&mut self, start_f: impl FnOnce(), update_f: impl FnMut(), render_f: impl FnMut()) {
-        env_logger::init();
-
-        start_f();
-
-        self.running = true;
-        let result = tokio::runtime::Runtime::new().unwrap().block_on(self.run(update_f, render_f));
-    }
-
-    // // Stops the engine
-    // // Should be called for a graceful shutdown of the engine
-    // fn stop(&mut self, stop_f: impl FnOnce()) {
-    //     stop_f();
-    //     self.running = false;
-    // }
-
-    // Starts running the engine
-    async fn run(&self, mut update_f: impl FnMut(), mut render_f: impl FnMut()) {
-        let event_loop = EventLoop::new().unwrap();
-        let window = WindowBuilder::new().build(&event_loop).unwrap();
-
-        let mut state = State::new(window).await;
-
-        let my_window_id = state.window().id();
-
-        event_loop.run(move |event, elwt| {
-            match event {
-                Event::WindowEvent {
-                    ref event,
-                    window_id,
-                } if window_id == my_window_id => {
-                    match &event {
-                        WindowEvent::CloseRequested => elwt.exit(),
-                        WindowEvent::Resized(physical_size) => {
-                            state.resize(*physical_size);
-                        },
-                        WindowEvent::ScaleFactorChanged { .. } => {
-                            state.resize(state.window().inner_size());
-                        },
-                        WindowEvent::KeyboardInput { event, .. } =>{
-                            if state.input(event) {
-                                state.window().request_redraw();
-                                return;
-                            }
-                            if event.state.is_pressed() {
-                                match event.physical_key {
-                                    Code(KeyCode::Escape) => {
-                                        elwt.exit();
-                                    },
-                                    _ => {}
-                                }
-                            }
-                        },
-                        WindowEvent::RedrawRequested if window_id == state.window().id() => {
-                            state.update();
-                            match state.render() {
-                                Ok(_) => {}
-                                // Reconfigure the surface if lost
-                                Err(wgpu::SurfaceError::Lost) => state.resize(*state.size()),
-                                // The system is out of memory, we should probably quit
-                                Err(wgpu::SurfaceError::OutOfMemory) => elwt.exit(),
-                                // All other errors (Outdated, Timeout) should be resolved by the next frame
-                                Err(e) => eprintln!("{:?}", e),
-                            }
-
-                        },
-                        _ => {}
-                    }
-                },
-                Event::AboutToWait => state.window().request_redraw(),
-                _ => {}
+    /// Stop the `Engine`.
+    pub fn shutdown(&mut self) {
+        match self.data.state {
+            EngineState::Running => {
+                self.data.state = EngineState::Stopping;
+                self.stop();
+            },
+            _ => {
+                log::error!(
+                    "Can only stop engine at '{}' state: tried to stop at '{}' state",
+                    EngineState::Running,
+                    self.data.state,
+                );
             }
-        }).unwrap();
+        }
     }
 
-    // Logical update that runs at each iteration of the engine
-    fn update(&self, mut update_f: impl FnMut()) {
-        update_f();
+    /// Internal function that handles the `Engine` starting. awdkja kwjdkaj
+    fn start(&mut self) {
+        // TODO: there should be something here to start the engine
+        self.data.state = EngineState::Running;
+        log::info!("Successfully started engine");
     }
 
-    // Rendering that runs at each iteration of the engine
-    fn render(&self, mut render_f: impl FnMut()) {
-        render_f();
+    /// Internal function that handles the `Engine` stopping.
+    fn stop(&mut self) {
+        // TODO: there should be something here to stop the engine
+        self.data.state = EngineState::Stopped;
+        log::info!("Successfully stopped engine");
+    }
+
+    /// Gets the current `EngineState`.
+    pub fn state(&self) -> EngineState {
+        self.data.state.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn engine_run_correct() {
+        let mut engine = Engine::default();
+        engine.run();
+        assert_eq!(engine.state(), EngineState::Running);
+    }
+
+    #[test]
+    fn engine_stop_correct() {
+        let mut engine = Engine::default();
+        engine.run();
+        engine.shutdown();
+        assert_eq!(engine.state(), EngineState::Stopped);
     }
 }

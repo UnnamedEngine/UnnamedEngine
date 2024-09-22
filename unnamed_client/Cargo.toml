@@ -4,8 +4,17 @@ version = "0.1.0"
 edition = "2021"
 build = "build.rs"
 
-[dependencies]
-unnamed_engine ={ path = "../unnamed_engine"}
+[build-dependencies.winres]
+workspace = true
 
-[build-dependencies]
-winres = "0.1"
+[dependencies.unnamed_engine]
+path = "../unnamed_engine"
+
+[dependencies.log]
+workspace = true
+
+[dependencies.env_logger]
+workspace = true
+
+[dependencies.strum]
+workspace = true

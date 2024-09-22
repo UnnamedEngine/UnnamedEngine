@@ -1,8 +1,6 @@
-mod client;
-
-use client::client::Client;
+use unnamed_engine::core::engine::Engine;
 
 fn main() {
-    let mut client = Client::new("UnnamedClient".to_string());
-    client.start();
+    let mut engine = Engine::default();
+    engine.run();
 }

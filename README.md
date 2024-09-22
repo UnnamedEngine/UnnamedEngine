@@ -11,24 +11,41 @@ Open-source game engine made to power high performant simulation games. The main
 (As a side note, this engine is being created to power two custom games, don't expect help or documentation yet)
 
 ## Supported Platforms
-- [x] Windows 10/11
-- [x] Linux
-- [x] MacOS
+- [ ] Windows 10/11
+- [ ] Linux
+- [ ] MacOS
 - [ ] Android
 - [ ] IOS
 - [ ] Web
 
 ## Current Features
-- [ ] Async Logger
-- [ ] Event System
-- [ ] Config System
-- [ ] Object Parsing
-- [ ] Network System
-- [ ] Entity Component System
-- [ ] Hot-Reloading Scripting
-- [ ] Graphics Renderer
-- [ ] Audio Renderer
+- [ ] Event system
+- [ ] Input handler
+- [ ] Configuration system
+- [ ] Client-server architecture
+- [ ] Rendering abstraction
+- [ ] Editor interface
+- [ ] Hot-reloading scripting
+- [ ] Entity component system
+- [ ] Script syntax highlight
 
 # Building
 
-Hello rustacean, just run `cargo build` :D
+Just run `cargo build --bin <binary_name>` with the desired binary :D
+
+## Client
+```
+cargo build --bin unnamed_client
+```
+
+## Server
+```
+cargo build --bin unnamed_server
+```
+
+## Editor
+```
+cargo build --bin unnamed_editor
+```
+
+# [License](./LICENSE)

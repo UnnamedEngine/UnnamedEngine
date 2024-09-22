@@ -1,5 +1,194 @@
-## Version
+## 0.0.28d - 21/09/2024
 
+- Added `.github/workflows` containing platform-specific workflows
+- Fixed `Worker` tests
+
+## 0.0.27d - 12/09/2024
+
+- Made `Engine` unit tests more legible
+- Added `Worker` structure
+- Adopted commit standard recommended by https://www.conventionalcommits.org/en/v1.0.0/
+
+## 0.0.26d - 10/09/2024
+
+- Started a remake from zero
+- Improved the workspace settings
+- Added `log` and `env_logger` for logging
+- Added `Engine` structure
+- Added unit tests for `Engine` methods and functionalities
+- Added `strum` to help with enums
+- Added resources and branding
+- Added `winres` to output Windows binaries with icons
+
+## 0.0.25d - 17/05/2024
+
+- Completely removed dependency injection pattern and `Application`
+
+## 0.0.24d - 16/05/2024
+
+- Added barebones dependency injection with `core/scheduler.rs`
+- Added barebones `Application` at `core/application.rs`
+
+## 0.0.23d - 30/03/2024
+
+- Better encapsulation for `Renderer` and `MiddlewareRenderer`
+- Updated `egui` to `0.27.1`
+- Updated `egui-wgpu` to `0.27.1`
+- Updated `egui-winit` to `0.27.1`
+
+## 0.0.22d - 25/03/2024
+
+- Voxel palette inside of chunks is now indexed by the `VoxelIndex` type
+- Removed unused `core/application.rs`
+- Changed wgpu `present_mode` into `Immediate`
+- Removed test egui rendering
+- Added gui with rendering stats
+
+## 0.0.21d - 23/03/2024
+
+- Fixed voxel index order
+- Added backface culling
+
+## 0.0.20d - 21/03/2024
+
+- Added `ChunkMesh`
+- Rendering now renders an entire chunk per draw call
+- Added `Material` to hold information related to shaders
+- Changed all `ShaderModule`s into `Material`s
+
+## 0.0.19d - 19/03/2024
+
+- Renamed `res` to `assets`
+- Created `assets/textures`
+- Moved `dirt.png` to `assets/textures`
+- Added `Chunk`, `ChunkIterator` and `ChunkVoxelPosition`
+- `Camera` now properly moves forward
+
+## 0.0.18d - 01/03/2024
+
+- Added `Module` trait to represent an engine module
+- `State` now contains a `Vec<Box<Module>>`
+- Transformed `Renderer` into a module
+
+## 0.0.17d - 29/02/2024
+
+- Improved `Screen` to handle its own rendering with `draw()`
+
+## 0.0.16d - 28/02/2024
+
+- Added instanced drawing
+- Added `Transform` to abstract 3d position, rotation and scale
+- Improved github workflows
+- `Texture` now handles its own `BindGroup`
+- Added `Screen` to serve as a buffer between rendering and presenting the result to the window
+- Added an example grayscale filter to `screen.wgsl`
+
+## 0.0.15d - 27/02/2024
+
+- Added `MouseMotion` event to represent mouse delta movement
+- Renamed `MouseMoved` to `MousePosition`
+- Added missing data to `CameraUniform` inside of `shader.wgsl`
+- Fixed `CameraController` using `u32`
+- Camera system now has working movement and rotation
+- Removed `Chunk`, `Voxel` and everything related
+- Added `create_depth_buffer` to `Texture`
+- Added a depth buffer to the renderer
+
+## 0.0.14d - 26/02/2024
+
+- Added `instant`
+- `Events` are no more passed as a borrow
+- Added barebones `Chunk` and `Voxel` (WIP)
+- FIX - Camera is not working anymore due to an attempt to introduce better movement and rotation
+
+## 0.0.13d - 25/02/2024
+
+- Added `quinn`
+- Added `rustls`
+- Added `Networking`
+- Added `networking/common` to handle commong networking logic
+- `engine.start()` now starts a server and a client that connects to it
+
+## 0.0.12d - 17/02/2024
+
+- Added `MouseScroll` event
+- Added `InputManager`
+- Added `Keyboard` wrapper
+- Added `Mouse` wrapper
+
+## 0.0.11d - 15/02/2024
+
+- Refactored description comments
+- Editor project
+- Created `Renderer` to abstract rendering
+- Moved rendering logic from `core/state.rs` to `renderer/renderer.rs`
+- Moved remaining resize logic from `core/engine.rs` to `renderer/rendere.rs`
+
+## 0.0.10d - 09/02/2024
+
+- Aspect is now changed to mirror window resizing
+
+## 0.0.9d - 08/02/2024
+
+- Updated `env_logger` crate to `0.11.1`
+- Updated `winit` crate to `0.29.10`
+- Updated `wgpu` crate to `0.19.1`
+- Removed unused `use`s
+- Changed the `CHANGELOG.md` format
+- Created `Viewport` to abstract windows creation and handling
+- Moved window logic from `core/state.rs` to `renderer/viewport.rs`
+- Converted `unwrap`s to `expect`
+- Added `MouseMoved` event
+- Added `MouseInput` event
+- Renamed `Keyboard` event to `KeyboardInput`
+- `Resize` event is now properly handled
+- Added `egui`
+- Added `egui-wgpu`
+- Added `egui-winit`
+- Created `EguiRenderer` to abstract the rendering of the gui
+- Created `gui/gui.rs` to contain all the egui rendering
+
+## 0.0.8d - 08/02/2024
+
+- Moved more parts of the camera from `core/state.rs` to `core/camera.rs`
+- Created `MiddlewareRenderer` to abstract rendering
+- Moved rendering from `core/state.rs` to `renderer/middleware_renderer.rs`
+
+## 0.0.7d - 06/02/2024
+
+- Changed identation from `4` `spaces` to `2` `spaces`
+- Improved building information at `README.md`
+- Moved `CameraUniform` from `core/state.rs` to `renderer/camera.rs`
+
+## 0.0.6d - 28/01/2024
+
+- Improved the header of all source files
+
+## 0.0.5d - 29/12/2023
+
+- Added a internal event dispatcher for the engine
+- Added new events `Shutdown` and `Resize`
+
+## 0.0.4d - 28/12/2023
+
+- `Camera` got moved into a camera file
+
+## 0.0.3d - 27/12/2023
+
+- Defined a versioning standard at `VERSIONING.md`
+- Exposed `Engine` to `start()`, `update()` and `render()` when called from applications
+- Added a header with proper description for all the files
+- Added `stop()` to request graceful shutdown
+- Added a `Event` enum to handle the events sent by the engine
+- Moved the `ESC` to close feature to the applications
+
+## 0.0.2d - 24/12/2023
+
+- `Update` and `Render` from upper applications are now properly called
+- Added env_logger
+- Window now has the name passed by the application
+
+## 0.0.1d - 24/09/2023
 - Start of the project
 - Added github actions to build and run tests on Windows, Ubuntu and MacOS
 - Barebones entry point

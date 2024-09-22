@@ -1,7 +1,8 @@
 {
-    "rust-analyzer.linkedProjects": [
-        ".\\unnamed_engine\\Cargo.toml",
-        ".\\unnamed_server\\Cargo.toml",
-        ".\\unnamed_client\\Cargo.toml",
-    ],
+    "editor.rulers": [80],
+    "rewrap.wrappingColumn": 80,
+    "rewrap.autoWrap.enabled": true,
+    "[rust]": {
+        "editor.wordWrapColumn": 80
+    }
 }
