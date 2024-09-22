@@ -1,4 +1,4 @@
-## 0.0.28d - 21/09/2024
+## 0.0.28d - 22/09/2024
 
 - Added `.github/workflows` containing platform-specific workflows
 - Fixed `Worker` tests
