@@ -1,3 +1,7 @@
+## 0.0.28d - 21/09/2024
+
+- Added `.github/workflows` containing platform-specific workflows
+
 ## 0.0.27d - 12/09/2024
 
 - Made `Engine` unit tests more legible

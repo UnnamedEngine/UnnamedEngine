@@ -1,0 +1,31 @@
+name: 🍎 MacOS
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-debug:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Debug
+      run: cargo build --verbose
+
+  build-release:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Release
+      run: cargo build --verbose --release
+
+  tests:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Tests
+      run: cargo test --verbose
