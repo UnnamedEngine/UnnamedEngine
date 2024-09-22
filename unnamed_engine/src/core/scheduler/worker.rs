@@ -145,9 +145,27 @@ impl Worker {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
 
     use super::*;
+
+    fn wait_for_state<F>(
+        condition: F,
+        timeout: Duration,
+        check_interval: Duration,
+    ) -> bool
+    where
+        F: Fn() -> bool,
+    {
+        let start = Instant::now();
+        while start.elapsed() < timeout {
+            if condition() {
+                return true;
+            }
+            thread::sleep(check_interval);
+        }
+        false
+    }
 
     #[test]
     fn create_worker() {
@@ -163,16 +181,24 @@ mod tests {
         let worker = Worker::new(0, Arc::new(Mutex::new(receiver)));
 
         let _ = sender.send(WorkerInstruction::Execute(Box::new(|| {
-            thread::sleep(Duration::from_secs(2));
+            thread::sleep(Duration::from_millis(100));
         })));
 
-        // Wait some time to make sure the job got started
-        thread::sleep(Duration::from_secs(1));
-        assert_eq!(*worker.state.lock().unwrap(), WorkerState::Executing);
+        // Make sure the job got started before timeout
+        let executing = wait_for_state(
+            || *worker.state.lock().unwrap() == WorkerState::Executing,
+            Duration::from_secs(1),
+            Duration::from_millis(10),
+        );
+        assert!(executing, "Worker did not initialize execution before timeout");
 
-        // Wait some time to make sure the job got completed
-        thread::sleep(Duration::from_secs(3));
-        assert_eq!(*worker.state.lock().unwrap(), WorkerState::Idle);
+        // Make sure the job got completed
+        let idle = wait_for_state(
+            || *worker.state.lock().unwrap() == WorkerState::Idle,
+            Duration::from_secs(1),
+            Duration::from_millis(10),
+        );
+        assert!(idle, "Worker did not complete job before timeout");
 
         // Terminate the worker
         let _ = sender.send(WorkerInstruction::Terminate);
@@ -182,70 +208,93 @@ mod tests {
     fn worker_execute_multiple() {
         let (sender, receiver) = mpsc::channel();
         let receiver = Arc::new(Mutex::new(receiver));
-        let workers = (0..4).map(|id| {
-            Worker::new(id, Arc::clone(&receiver))
-        }).collect::<Vec<_>>();
+        let workers = (0..4)
+            .map(|id|Worker::new(id, Arc::clone(&receiver)))
+            .collect::<Vec<_>>();
 
-        workers.iter().for_each(|_| {
+        for _ in &workers {
             let _ = sender.send(WorkerInstruction::Execute(Box::new(|| {
-                thread::sleep(Duration::from_secs(2));
+                thread::sleep(Duration::from_millis(100));
             })));
-        });
+        }
 
-        // Wait some time to make sure the jobs got started
-        thread::sleep(Duration::from_secs(1));
-        workers.iter().for_each(|worker| {
-            assert_eq!(*worker.state.lock().unwrap(), WorkerState::Executing);
-        });
+        // Make sure the jobs got started before timeout
+        for worker in &workers {
+            let executing = wait_for_state(
+                || *worker.state.lock().unwrap() == WorkerState::Executing,
+                Duration::from_secs(1),
+                Duration::from_millis(10),
+            );
+            assert!(executing, "Worker {:?} did not initialize execution before timeout", worker.kind);
+        }
 
-        // Wait some time to make sure the jobs got completed
-        thread::sleep(Duration::from_secs(3));
-        workers.iter().for_each(|worker| {
-            assert_eq!(*worker.state.lock().unwrap(), WorkerState::Idle);
-        });
+        // Make sure the jobs got completed
+        for worker in &workers {
+            let idle = wait_for_state(
+                || *worker.state.lock().unwrap() == WorkerState::Idle,
+                Duration::from_secs(1),
+                Duration::from_millis(10),
+            );
+            assert!(idle, "Worker {:?} did not complete job before timeout", worker.kind);
+        }
 
         // Terminate the workers
-        workers.iter().for_each(|_| {
+        for _ in &workers {
             let _ = sender.send(WorkerInstruction::Terminate);
-        });
+        }
     }
 
     #[test]
     fn worker_execute_more_than_available() {
         let (sender, receiver) = mpsc::channel();
         let receiver = Arc::new(Mutex::new(receiver));
-        let workers = (0..4).map(|id| {
-            Worker::new(id, Arc::clone(&receiver))
-        }).collect::<Vec<_>>();
+        let workers = (0..4)
+            .map(|id| Worker::new(id, Arc::clone(&receiver)))
+            .collect::<Vec<_>>();
+
+        let total_jobs = 8;
 
         // Send double the amount of jobs
-        (0..8).for_each(|_| {
+        for _ in 0..total_jobs {
             let _ = sender.send(WorkerInstruction::Execute(Box::new(|| {
-                thread::sleep(Duration::from_secs(2));
+                thread::sleep(Duration::from_millis(100));
             })));
-        });
+        }
 
-        // Wait some time to make sure the jobs got started
-        thread::sleep(Duration::from_secs(1));
-        workers.iter().for_each(|worker| {
-            assert_eq!(*worker.state.lock().unwrap(), WorkerState::Executing);
-        });
+        // Make sure the jobs got started before timeout
+        for worker in &workers {
+            let executing = wait_for_state(
+                || *worker.state.lock().unwrap() == WorkerState::Executing,
+                Duration::from_secs(1),
+                Duration::from_millis(10),
+            );
+            assert!(executing, "Worker {:?} did not initialize execution before timeout", worker.kind);
+        }
 
-        // Wait some time to make sure the second wave of jobs got started
-        thread::sleep(Duration::from_secs(3));
-        workers.iter().for_each(|worker| {
-            assert_eq!(*worker.state.lock().unwrap(), WorkerState::Executing);
-        });
+        // Wait until all workers are idle, indicating that all jobs got
+        // processed
+        let start_time = Instant::now();
+        loop {
+            let idle_workers = workers.iter().filter(|worker| {
+                *worker.state.lock().unwrap() == WorkerState::Idle
+            }).count();
 
-        // Wait some time to make sure all jobs got completed
-        thread::sleep(Duration::from_secs(3));
-        workers.iter().for_each(|worker| {
-            assert_eq!(*worker.state.lock().unwrap(), WorkerState::Idle);
-        });
+            if idle_workers == workers.len() {
+                // All workers are inactive
+                break;
+            }
+
+            if start_time.elapsed() > Duration::from_secs(2) {
+                panic!("Nem todos os workers ficaram inativos dentro do timeout");
+            }
+
+            // Prevents busy-waiting
+            thread::sleep(Duration::from_millis(10));
+        }
 
         // Terminate the workers
-        workers.iter().for_each(|_| {
+        for _ in &workers {
             let _ = sender.send(WorkerInstruction::Terminate);
-        });
+        }
     }
 }
