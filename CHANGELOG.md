@@ -1,3 +1,8 @@
+## 0.0.29d - 25/09/2024
+
+- Added dedicated `Worker`
+- Added `WorkerPool`
+
 ## 0.0.28d - 22/09/2024
 
 - Added `.github/workflows` containing platform-specific workflows

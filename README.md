@@ -11,14 +11,15 @@ Open-source game engine made to power high performant simulation games. The main
 (As a side note, this engine is being created to power two custom games, don't expect help or documentation yet)
 
 ## Supported Platforms
-- [ ] Windows 10/11
-- [ ] Linux
-- [ ] MacOS
+- [x] Windows 10/11
+- [x] Linux
+- [x] MacOS
 - [ ] Android
 - [ ] IOS
 - [ ] Web
 
 ## Current Features
+- [x] Workers
 - [ ] Event system
 - [ ] Input handler
 - [ ] Configuration system
@@ -36,16 +37,6 @@ Just run `cargo build --bin <binary_name>` with the desired binary :D
 ## Client
 ```
 cargo build --bin unnamed_client
-```
-
-## Server
-```
-cargo build --bin unnamed_server
-```
-
-## Editor
-```
-cargo build --bin unnamed_editor
 ```
 
 # [License](./LICENSE)
