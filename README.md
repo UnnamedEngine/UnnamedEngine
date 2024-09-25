@@ -2,9 +2,9 @@
     <img src="resource/branding/unnamed_engine.png?raw=true" alt="Unnamed Engine">
 </p>
 
-[![🪟 Windows](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Windows.yml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Windows.yml)
-[![🐧 Ubuntu](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Ubuntu.yml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Ubuntu.yml)
-[![🍎 MacOS](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/MacOS.yml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/MacOS.yml)
+[![🪟 Windows](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Windows.yaml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Windows.yaml)
+[![🐧 Ubuntu](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Ubuntu.yaml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/Ubuntu.yaml)
+[![🍎 MacOS](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/MacOS.yaml/badge.svg)](https://github.com/UnnamedEngine/UnnamedEngine/actions/workflows/MacOS.yaml)
 
 Open-source game engine made to power high performant simulation games. The main objectives are customzation and performance, allowing you to create complex stuff without restrictions.
 

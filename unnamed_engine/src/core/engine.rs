@@ -107,7 +107,7 @@ impl Engine {
 
     /// Gets the current `EngineState`.
     pub fn state(&self) -> EngineState {
-        self.data.state.clone()
+        self.data.state
     }
 }
 
