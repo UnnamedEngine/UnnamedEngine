@@ -2,6 +2,10 @@
 
 - Added dedicated `Worker`
 - Added `WorkerPool`
+- Added `Event`
+- Added `EngineEvent`
+- Added `Dispatcher` and `Consumer` to handle events
+- Changed `Engine` to respond to events
 
 ## 0.0.28d - 22/09/2024
 

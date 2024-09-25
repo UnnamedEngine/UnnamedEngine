@@ -1,5 +1,7 @@
 use strum::Display;
 
+use super::event;
+
 /// All the possible states a `Engine` can be at.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
 pub enum EngineState {
@@ -17,15 +19,20 @@ pub enum EngineState {
     Stopping,
 }
 
+/// Contains the major data required to run the application.
 pub struct EngineData {
     /// Flags the current state of the `Engine`. This value will be read a lot
     /// and rarely will change.
     pub state: EngineState,
+    /// `Event` dispatcher that can be freely cloned everywhere.
+    pub event_dispatcher: event::Dispatcher,
 }
 
-/// Contains the major data required to run the application.
 pub struct Engine {
+    /// Shared data.
     data: EngineData,
+    /// Event consumer that will continuosly poll for events.
+    event_consumer: event::Consumer,
 }
 
 impl Default for Engine {
@@ -46,12 +53,16 @@ impl Default for Engine {
             env_logger::init_from_env(env);
         }
 
+        let (event_dispatcher, event_consumer) = event::create_handler();
+
         let data = EngineData {
             state: EngineState::Stopped,
+            event_dispatcher,
         };
 
         Self {
             data,
+            event_consumer,
         }
     }
 }
@@ -79,6 +90,9 @@ impl Engine {
         match self.data.state {
             EngineState::Running => {
                 self.data.state = EngineState::Stopping;
+                self.data.event_dispatcher.send(
+                    event::Event::Engine(event::engine_event::EngineEvent::Shutdown)
+                );
                 self.stop();
             },
             _ => {
@@ -95,19 +109,64 @@ impl Engine {
     fn start(&mut self) {
         // TODO: there should be something here to start the engine
         self.data.state = EngineState::Running;
-        log::info!("Successfully started engine");
+        self.data.event_dispatcher.send(
+            event::Event::Engine(event::engine_event::EngineEvent::Started)
+        );
+        self.handle_all_events();
     }
 
     /// Internal function that handles the `Engine` stopping.
     fn stop(&mut self) {
         // TODO: there should be something here to stop the engine
         self.data.state = EngineState::Stopped;
-        log::info!("Successfully stopped engine");
+        self.data.event_dispatcher.send(
+            event::Event::Engine(event::engine_event::EngineEvent::Stopped)
+        );
+        self.handle_all_events();
     }
 
     /// Gets the current `EngineState`.
     pub fn state(&self) -> EngineState {
         self.data.state
+    }
+
+    /// Handle all pending events.
+    fn handle_all_events(&self) {
+        let mut pending = true;
+        while pending {
+            pending = self.handle_event();
+        }
+    }
+
+    /// Handle a single event.
+    fn handle_event(&self) -> bool {
+        if let Some(event) = self.event_consumer.poll() {
+            match event {
+                event::Event::Engine(engine_event) => {
+                    match engine_event {
+                        event::engine_event::EngineEvent::Started => {
+                            log::info!("Successfully started engine!");
+                        },
+                        event::engine_event::EngineEvent::Shutdown => {
+                            log::info!("Engine preparing for graceful shutdown!");
+                        },
+                        event::engine_event::EngineEvent::Stopped => {
+                            log::info!("Engine gracefully stopped!");
+                            log::info!("See you again :D");
+                        },
+                    }
+                },
+
+                #[cfg(test)]
+                event::Event::Dummy => {},
+            }
+
+            // Event got polled and handled
+            return true
+        }
+
+        // Did not find or handle any events
+        false
     }
 }
 
