@@ -38,5 +38,3 @@ Just run `cargo build --bin <binary_name>` with the desired binary :D
 ```
 cargo build --bin unnamed_client
 ```
-
-# [License](./LICENSE)
