@@ -3,6 +3,8 @@
     "rewrap.wrappingColumn": 80,
     "rewrap.autoWrap.enabled": true,
     "[rust]": {
-        "editor.wordWrapColumn": 80
+        "editor.wordWrapColumn": 80,
+        "editor.defaultFormatter": "rust-lang.rust-analyzer",
+        "editor.formatOnSave": false
     }
 }

@@ -3,6 +3,9 @@ name = "unnamed_engine"
 version = "0.1.0"
 edition = "2021"
 
+[dev-dependencies.serial_test]
+workspace = true
+
 [dependencies.thiserror]
 workspace = true
 
@@ -13,4 +16,7 @@ workspace = true
 workspace = true
 
 [dependencies.strum]
+workspace = true
+
+[dependencies.crossbeam]
 workspace = true
