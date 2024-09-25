@@ -11,22 +11,18 @@ env:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
     - uses: actions/checkout@v3
     - name: Install cargo-audit
       run: cargo install cargo-audit
-
     - name: Build Debug
       run: cargo build --verbose
-
     - name: Build Release
-    run: cargo build --verbose --release
-
+      run: cargo build --verbose --release
     - name: Tests
       run: cargo test --verbose
-
     - name: Clippy
       run: cargo clippy --verbose -- -D warnings
-
     - name: Audit
       run: cargo audit
