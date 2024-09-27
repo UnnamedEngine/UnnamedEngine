@@ -1,7 +1,6 @@
-use unnamed_engine::core::engine::Engine;
+use unnamed_engine::core::application::Application;
 
 fn main() {
-    let mut engine = Engine::default();
-    engine.run();
-    engine.shutdown();
+    let mut app = Application::new("UnnamedClient".to_string());
+    app.run();
 }

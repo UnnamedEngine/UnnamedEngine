@@ -8,7 +8,7 @@ use super::worker::{Worker, WorkerInstruction, WorkerKind, WorkerNotification};
 
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum Error {
-    /// Failed to send instruction
+    /// Failed to send instruction.
     #[error("Failed to send instruction")]
     InstructionSendFail,
     /// This specialization already exists inside the `WorkerPool`.
@@ -92,6 +92,12 @@ impl WorkerPool {
 
         let dedicated = HashSet::default();
 
+        log::info!(
+            "Initializing WorkerPool with {} workers. The process is using {} workers at total.",
+            workers.len(),
+            workers.len() + 1,
+        );
+
         Self {
             workers,
             dedicated,
@@ -163,6 +169,27 @@ impl WorkerPool {
                     "Received notification that specialized worker '{}' has completed its job",
                     kind,
                 )
+            }
+        }
+    }
+
+    /// Send a termination instruction to all workers and waits for the
+    /// associated threds to join.
+    pub fn terminate_all(&mut self) {
+        for _ in 0..self.workers.len() {
+            let _ = self.send(WorkerInstruction::Terminate);
+        }
+
+        for worker in &mut self.workers {
+            match worker.join() {
+                Ok(_) => {},
+                Err(err) => {
+                    log::error!(
+                        "Failed to join '{}' worker: {}",
+                        worker.kind(),
+                        err.to_string(),
+                    )
+                },
             }
         }
     }

@@ -2,8 +2,19 @@ use std::{sync::{Arc, Mutex}, thread::{self, JoinHandle}};
 
 use crossbeam::channel::{Receiver, Sender};
 use strum::{Display, EnumCount};
+use thiserror::Error;
 
 use super::Job;
+
+#[derive(Debug, Error, PartialEq, Eq)]
+pub enum Error {
+    /// Thread already joined.
+    #[error("Thread already joined")]
+    ThreadAlreadyJoined,
+    /// Failed to join thread.
+    #[error("Failed to join thread")]
+    ThreadJoinFailure(String),
+}
 
 /// All the variations of a `Worker`. Specially useful for defining dedicated
 /// workers that will only execute one big `Job`.
@@ -14,6 +25,7 @@ pub enum WorkerKind {
     /// After a graceful initialization, generic workers can be transformed in
     /// dedicted workers, this can be achieved by using
     /// `WorkerInstruction::Specialize`.
+    #[strum(to_string = "Generic({0})")]
     Generic(usize),
     /// Represents the `Worker` that will be used only for networking.
     Networking,
@@ -62,11 +74,11 @@ pub enum WorkerNotification {
 /// the thread.
 pub struct Worker {
     /// Defines the kind of the current `Worker`.
-    pub kind: Arc<Mutex<WorkerKind>>,
+    kind: Arc<Mutex<WorkerKind>>,
     /// Flags the current state of the `Worker`.
-    pub state: Arc<Mutex<WorkerState>>,
+    state: Arc<Mutex<WorkerState>>,
     /// A handle for the thread this `Worker` is responsible for.
-    pub thread: JoinHandle<()>,
+    handle: Option<JoinHandle<()>>,
 }
 
 impl Worker {
@@ -82,7 +94,7 @@ impl Worker {
         let state_clone = Arc::clone(&state);
         let receiver_clone = receiver.clone();
 
-        let thread = thread::spawn(move || {
+        let handle = thread::spawn(move || {
             let kind = *kind_clone.lock().unwrap();
             loop {
                 match receiver_clone.recv() {
@@ -178,7 +190,42 @@ impl Worker {
         Self {
             kind,
             state,
-            thread,
+            handle: Some(handle),
+        }
+    }
+
+    /// Returns a copy of the current `WorkerKind`.
+    pub fn kind(&self) -> WorkerKind {
+        *Arc::clone(&self.kind).lock().unwrap()
+    }
+
+    /// Returns a copy of the current `WorkerState`.
+    pub fn state(&self) -> WorkerState {
+        *Arc::clone(&self.state).lock().unwrap()
+    }
+
+    /// Joins the thread of this `Worker`.
+    pub fn join(&mut self) -> Result<(), Error> {
+        if let Some(handle) = self.handle.take() {
+            match handle.join() {
+                Ok(_) => {
+                    log::info!("Thread from worker '{}' sucessfully joined",
+                        self.kind(),
+                    );
+                    Ok(())
+                },
+                Err(err) => {
+                    if let Some(err_msg) = err.downcast_ref::<&str>() {
+                        Err(Error::ThreadJoinFailure(err_msg.to_string()))
+                    } else if let Some(err_string) = err.downcast_ref::<String>() {
+                        Err(Error::ThreadJoinFailure(err_string.clone()))
+                    } else {
+                        Err(Error::ThreadJoinFailure("unknown reason".to_string()))
+                    }
+                },
+            }
+        } else {
+            Err(Error::ThreadAlreadyJoined)
         }
     }
 
@@ -318,12 +365,12 @@ mod tests {
         let (_, receiver) = unbounded();
         let (notification_sender, _) = unbounded();
 
-        let worker = Worker::new(0, receiver.clone(), notification_sender);
+        let mut worker = Worker::new(0, receiver.clone(), notification_sender);
 
         assert_eq!(*worker.kind.lock().unwrap(), WorkerKind::Generic(0));
         assert_eq!(*worker.state.lock().unwrap(), WorkerState::Idle);
 
-        let _ = worker.thread.join();
+        let _ = worker.join();
     }
 
     #[test]
@@ -361,8 +408,8 @@ mod tests {
             let _ = sender.send(WorkerInstruction::Terminate);
         }
 
-        for worker in workers {
-            let _ = worker.thread.join();
+        for mut worker in workers {
+            let _ = worker.join();
         }
     }
 
@@ -401,8 +448,8 @@ mod tests {
             let _ = sender.send(WorkerInstruction::Terminate);
         }
 
-        for worker in workers {
-            let _ = worker.thread.join();
+        for mut worker in workers {
+            let _ = worker.join();
         }
     }
 
@@ -454,8 +501,8 @@ mod tests {
             let _ = sender.send(WorkerInstruction::Terminate);
         }
 
-        for worker in workers {
-            let _ = worker.thread.join();
+        for mut worker in workers {
+            let _ = worker.join();
         }
     }
 
@@ -497,8 +544,8 @@ mod tests {
             let _ = sender.send(WorkerInstruction::Terminate);
         }
 
-        for worker in workers {
-            let _ = worker.thread.join();
+        for mut worker in workers {
+            let _ = worker.join();
         }
     }
 }

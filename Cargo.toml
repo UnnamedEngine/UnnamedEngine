@@ -30,3 +30,6 @@ features = ["derive"]
 
 [workspace.dependencies.crossbeam]
 version = "0.8.4"
+
+[workspace.dependencies.winit]
+version = "0.30.5"

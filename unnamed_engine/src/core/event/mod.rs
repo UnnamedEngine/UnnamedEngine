@@ -2,8 +2,10 @@ use std::sync::mpsc::{self, TryRecvError};
 
 use engine_event::EngineEvent;
 use strum::Display;
+use window_event::WindowEvent;
 
 pub mod engine_event;
+pub mod window_event;
 
 /// Main enum that defines all our events.
 ///
@@ -16,6 +18,9 @@ pub mod engine_event;
 pub enum Event {
     /// Events produced by the `Engine`.
     Engine(EngineEvent),
+
+    /// Events produced by a `winit::window::Window`.
+    Window(WindowEvent),
 
     /// Only used during tests.
     #[cfg(test)]

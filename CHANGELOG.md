@@ -1,3 +1,12 @@
+## 0.0.30d - 27/09/2024
+
+- Added a initialization log to `WorkerPool`
+- Added a `WorkerPool` to `Engine`
+- Added `Application`
+- `unnamed_client` now uses `Application` instead of `Engine`
+- Added minor improvements to `WorkerPool`, `Worker` and `Engine`
+- Removed unused code
+
 ## 0.0.29d - 25/09/2024
 
 - Added dedicated `Worker`

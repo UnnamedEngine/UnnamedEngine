@@ -1,6 +1,6 @@
 use strum::Display;
 
-use super::event;
+use super::{event::{self, Event}, scheduler::{pool::WorkerPool, worker::WorkerInstruction}};
 
 /// All the possible states a `Engine` can be at.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
@@ -33,6 +33,8 @@ pub struct Engine {
     data: EngineData,
     /// Event consumer that will continuosly poll for events.
     event_consumer: event::Consumer,
+    /// Worker pool.
+    worker_pool: WorkerPool,
 }
 
 impl Default for Engine {
@@ -60,9 +62,12 @@ impl Default for Engine {
             event_dispatcher,
         };
 
+        let worker_pool = WorkerPool::default();
+
         Self {
             data,
             event_consumer,
+            worker_pool,
         }
     }
 }
@@ -123,11 +128,27 @@ impl Engine {
             event::Event::Engine(event::engine_event::EngineEvent::Stopped)
         );
         self.handle_all_events();
+        self.worker_pool.terminate_all();
     }
 
     /// Gets the current `EngineState`.
     pub fn state(&self) -> EngineState {
         self.data.state
+    }
+
+    /// Dispatches the passed `Event`.
+    pub fn dispatch(&self, event: Event) {
+        self.data.event_dispatcher.send(event);
+    }
+
+    /// Sends an instruction to a `Worker` that is currently available.
+    pub fn instruct(&mut self, instruction: WorkerInstruction) {
+        match self.worker_pool.send(instruction) {
+            Ok(_) => {},
+            Err(err) => {
+                log::error!("Failed to send instruction to worker: {}", err.to_string());
+            },
+        }
     }
 
     /// Handle all pending events.
@@ -159,6 +180,10 @@ impl Engine {
 
                 #[cfg(test)]
                 event::Event::Dummy => {},
+
+                _ => {
+                    log::warn!("Event handling not implemented for '{}'", event);
+                }
             }
 
             // Event got polled and handled
