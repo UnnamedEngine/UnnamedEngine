@@ -117,6 +117,41 @@ impl ApplicationHandler for Application {
                     },
                 }
             },
+            WindowEvent::MouseInput {
+                device_id: _,
+                state,
+                button,
+            } => {
+                match state {
+                    winit::event::ElementState::Pressed => {
+                        self.engine.dispatch(
+                            Event::Mouse(
+                                super::event::mouse_event::MouseEvent::ButtonPress(button)
+                            )
+                        );
+                    },
+                    winit::event::ElementState::Released => {
+                        self.engine.dispatch(
+                            Event::Mouse(
+                                super::event::mouse_event::MouseEvent::ButtonRelease(button)
+                            )
+                        );
+                    },
+                }
+            }
+            WindowEvent::CursorMoved {
+                device_id: _,
+                position
+            } => {
+                self.engine.dispatch(
+                    Event::Mouse(
+                        super::event::mouse_event::MouseEvent::Moved(
+                            position.x as u32,
+                            position.y as u32,
+                        )
+                    )
+                );
+            }
             _ => (),
         }
     }

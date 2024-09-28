@@ -1,13 +1,15 @@
 use std::sync::mpsc::{self, TryRecvError};
 
 use engine_event::EngineEvent;
-use keyboard_event::KeyboardEvent;
-use strum::Display;
 use window_event::WindowEvent;
+use keyboard_event::KeyboardEvent;
+use mouse_event::MouseEvent;
+use strum::Display;
 
 pub mod engine_event;
 pub mod window_event;
 pub mod keyboard_event;
+pub mod mouse_event;
 pub mod event_handler;
 
 /// Main enum that defines all our events.
@@ -27,6 +29,9 @@ pub enum Event {
 
     /// Events produced by the keyboard.
     Keyboard(KeyboardEvent),
+
+    /// Events produced by the mouse.
+    Mouse(MouseEvent),
 
     /// Only used during tests.
     #[cfg(test)]

@@ -21,7 +21,7 @@ Open-source game engine made to power high performant simulation games. The main
 ## Current Features
 - [x] Workers
 - [x] Event system
-- [ ] Input handler
+- [x] Input handler
 - [ ] Configuration system
 - [ ] Client-server architecture
 - [ ] Rendering abstraction

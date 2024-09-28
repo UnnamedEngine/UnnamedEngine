@@ -196,6 +196,9 @@ impl Engine {
                     }
                 },
 
+                // Ignore mouse events just so we don't spam the log that much
+                event::Event::Mouse(_) => {},
+
                 #[cfg(test)]
                 event::Event::Dummy => {},
 
