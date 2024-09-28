@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use strum::Display;
 
 use super::{event::{self, Event}, scheduler::{pool::WorkerPool, worker::WorkerInstruction}};
@@ -35,6 +37,9 @@ pub struct Engine {
     event_consumer: event::Consumer,
     /// Worker pool.
     worker_pool: WorkerPool,
+    /// Contains the events that are already handled by the `Engine`'s internals
+    /// and can be used by other areas.
+    ready_events: VecDeque<Event>,
 }
 
 impl Default for Engine {
@@ -64,10 +69,13 @@ impl Default for Engine {
 
         let worker_pool = WorkerPool::default();
 
+        let ready_events = VecDeque::default();
+
         Self {
             data,
             event_consumer,
             worker_pool,
+            ready_events,
         }
     }
 }
@@ -110,6 +118,11 @@ impl Engine {
         }
     }
 
+    /// Runs one iteration of the `Engine`,
+    pub fn step(&mut self) {
+        self.update();
+    }
+
     /// Internal function that handles the `Engine` starting. awdkja kwjdkaj
     fn start(&mut self) {
         // TODO: there should be something here to start the engine
@@ -129,6 +142,11 @@ impl Engine {
         );
         self.handle_all_events();
         self.worker_pool.terminate_all();
+    }
+
+    /// Updates the `Engine` state.
+    fn update(&mut self) {
+        self.handle_all_events();
     }
 
     /// Gets the current `EngineState`.
@@ -152,7 +170,7 @@ impl Engine {
     }
 
     /// Handle all pending events.
-    fn handle_all_events(&self) {
+    fn handle_all_events(&mut self) {
         let mut pending = true;
         while pending {
             pending = self.handle_event();
@@ -160,9 +178,9 @@ impl Engine {
     }
 
     /// Handle a single event.
-    fn handle_event(&self) -> bool {
+    fn handle_event(&mut self) -> bool {
         if let Some(event) = self.event_consumer.poll() {
-            match event {
+            match &event {
                 event::Event::Engine(engine_event) => {
                     match engine_event {
                         event::engine_event::EngineEvent::Started => {
@@ -182,9 +200,12 @@ impl Engine {
                 event::Event::Dummy => {},
 
                 _ => {
-                    log::warn!("Event handling not implemented for '{}'", event);
+                    log::warn!("Internal event handling not implemented for '{}'", event);
                 }
             }
+
+            // Forward event to other areas
+            self.ready_events.push_back(event);
 
             // Event got polled and handled
             return true
@@ -192,6 +213,11 @@ impl Engine {
 
         // Did not find or handle any events
         false
+    }
+
+    /// Returns a single event that was forwarded to other areas.
+    pub fn require_event(&mut self) -> Option<Event> {
+        self.ready_events.pop_front()
     }
 }
 

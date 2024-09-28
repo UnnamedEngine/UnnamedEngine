@@ -1,3 +1,10 @@
+## 0.0.31d - 28/09/2024
+
+- Improved `Application` stop procedure
+- Added `KeyboardEvent`
+- Added minor improvements to `Engine` and `Application` to further enhanced the
+  event capabilities
+
 ## 0.0.30d - 27/09/2024
 
 - Added a initialization log to `WorkerPool`

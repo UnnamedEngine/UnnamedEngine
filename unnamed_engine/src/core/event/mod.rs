@@ -1,11 +1,14 @@
 use std::sync::mpsc::{self, TryRecvError};
 
 use engine_event::EngineEvent;
+use keyboard_event::KeyboardEvent;
 use strum::Display;
 use window_event::WindowEvent;
 
 pub mod engine_event;
 pub mod window_event;
+pub mod keyboard_event;
+pub mod event_handler;
 
 /// Main enum that defines all our events.
 ///
@@ -21,6 +24,9 @@ pub enum Event {
 
     /// Events produced by a `winit::window::Window`.
     Window(WindowEvent),
+
+    /// Events produced by the keyboard.
+    Keyboard(KeyboardEvent),
 
     /// Only used during tests.
     #[cfg(test)]

@@ -1,11 +1,12 @@
 use winit::{application::ApplicationHandler, event::WindowEvent, event_loop::{ControlFlow, EventLoop}, window::Window};
 
-use super::engine::Engine;
+use super::{engine::{Engine, EngineState}, event::{event_handler::{EventHandler, RawCallback}, Event}};
 
 pub struct Application {
     window: Option<Window>,
     engine: Engine,
     title: String,
+    event_handler: EventHandler<Engine>,
 }
 
 impl Application {
@@ -14,10 +15,13 @@ impl Application {
 
         let window = None;
 
+        let event_handler = EventHandler::default();
+
         Self {
             window,
             engine,
             title,
+            event_handler,
         }
     }
 
@@ -36,6 +40,11 @@ impl Application {
                 log::error!("Failed to run event_loop: {}", err.to_string());
             },
         }
+    }
+
+    /// Sets the `EventHandler`.
+    pub fn set_event_handler(&mut self, handler: RawCallback<Engine>) {
+        self.event_handler.set_event_handler(handler);
     }
 }
 
@@ -57,7 +66,6 @@ impl ApplicationHandler for Application {
         match event {
             WindowEvent::CloseRequested => {
                 self.engine.shutdown();
-                event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
                 // Redraw the application
@@ -67,7 +75,18 @@ impl ApplicationHandler for Application {
                 // AboutToWait, since rendering in here allows the program to
                 // gracefully handle redraws requested by the OS.
 
-                // Draw.
+                // Step the engine
+                self.engine.step();
+                // Handle events at other areas
+                while let Some(event) = self.engine.require_event() {
+                    self.event_handler.step(&mut self.engine, &event);
+                }
+
+                // Stop the event loop when the engine gets at the
+                // `EngineState::Stopped` state
+                if self.engine.state() == EngineState::Stopped {
+                    event_loop.exit();
+                }
 
                 // Queue a RedrawRequested event.
                 //
@@ -75,6 +94,28 @@ impl ApplicationHandler for Application {
                 // to redraw in applications which do not always need to.
                 // Applications that redraw continously can render here instead.
                 self.window.as_ref().unwrap().request_redraw();
+            },
+            WindowEvent::KeyboardInput {
+                device_id: _,
+                event,
+                is_synthetic: _,
+            } => {
+                match event.state {
+                    winit::event::ElementState::Pressed => {
+                        self.engine.dispatch(
+                            Event::Keyboard(
+                                super::event::keyboard_event::KeyboardEvent::Press(event.physical_key)
+                            )
+                        );
+                    },
+                    winit::event::ElementState::Released => {
+                        self.engine.dispatch(
+                            Event::Keyboard(
+                                super::event::keyboard_event::KeyboardEvent::Release(event.physical_key)
+                            )
+                        );
+                    },
+                }
             },
             _ => (),
         }
