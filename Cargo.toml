@@ -33,3 +33,7 @@ version = "0.8.4"
 
 [workspace.dependencies.winit]
 version = "0.30.5"
+
+[workspace.dependencies.mlua]
+version = "0.9.9"
+features = ["luau-jit", "vendored"]

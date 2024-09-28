@@ -5,6 +5,7 @@
 - Added minor improvements to `Engine` and `Application` to further enhanced the
   event capabilities
 - Added `MouseEvent`
+- Added `mlua`
 
 ## 0.0.30d - 27/09/2024
 
