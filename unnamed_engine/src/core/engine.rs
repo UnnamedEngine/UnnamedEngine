@@ -4,7 +4,7 @@ use strum::Display;
 
 use super::{event::{self, Event}, scheduler::{pool::WorkerPool, worker::WorkerInstruction}};
 
-/// All the possible states a `Engine` can be at.
+/// All the possible states an `Engine` can be at.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq)]
 pub enum EngineState {
     /// `Engine` is currently stopped and can only be started with

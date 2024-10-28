@@ -16,7 +16,7 @@ version = "3.1.1"
 
 # General dependencies
 [workspace.dependencies.thiserror]
-version = "1.0.64"
+version = "1.0.65"
 
 [workspace.dependencies.log]
 version = "0.4.22"
@@ -35,5 +35,12 @@ version = "0.8.4"
 version = "0.30.5"
 
 [workspace.dependencies.mlua]
-version = "0.9.9"
+version = "0.10.0"
 features = ["luau-jit", "vendored"]
+
+[workspace.dependencies.quinn]
+version = "0.11.5"
+
+[workspace.dependencies.rustls]
+version = "0.23.16"
+features = ["dangerous_configuration", "quic"]
